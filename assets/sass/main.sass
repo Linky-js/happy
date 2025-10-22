@@ -1,0 +1,147 @@
+@use '_fonts'
+
+*
+  padding: 0
+  margin: 0
+  border: 0
+  -webkit-box-sizing: border-box
+  box-sizing: border-box
+
+  &:before, &:after
+    -webkit-box-sizing: border-box
+    box-sizing: border-box
+
+:focus, :active
+  outline: none
+
+a
+  &:focus, &:active
+    outline: none
+
+nav, footer, header, aside
+  display: block
+
+html, body
+  height: 100%
+  width: 100%
+  font-size: 100%
+  line-height: 1
+  font-size: 14px
+  -ms-text-size-adjust: 100%
+  -moz-text-size-adjust: 100%
+  -webkit-text-size-adjust: 100%
+
+input, button, textarea
+  font-family: inherit
+
+input::-ms-clear
+  display: none
+
+button
+  cursor: pointer
+
+  &::-moz-focus-inner
+    padding: 0
+    border: 0
+
+a
+  cursor: pointer
+  text-decoration: none
+
+  &:visited, &:hover
+    text-decoration: none
+
+ul li
+  list-style: none
+
+img
+  vertical-align: top
+
+h1, h2, h3, h4, h5, h6
+  font-size: inherit
+  font-weight: inherit
+
+h1
+  font-size: 96px
+  font-weight: 600
+  line-height: 110%
+
+h2
+  font-size: 56px
+  line-height: 110%
+  font-weight: 600
+h3 
+  font-size: 36px
+  font-weight: 600
+  line-height: 110%
+p 
+  color: #585858
+  font-size: 18px
+  line-height: 130%
+
+body
+  font-family: 'TikTok Sans', sans-serif
+  overflow-x: hidden
+  color: #2E363B
+  background: #F0F2F5
+  &::-webkit-scrollbar
+    width: 5px
+    background-color: #fff
+  &::-webkit-scrollbar-thumb
+    background-color: #2E363B
+
+.container
+  max-width: 1364px
+  margin: 0 auto
+  padding: 0 20px
+.slide-fade-enter-active,
+.slide-fade-leave-active
+  transition: all .4s ease
+
+.slide-fade-enter-from
+  opacity: 0
+  transform: translateY(-15px)
+
+.slide-fade-leave-to
+  opacity: 0
+  transform: translateY(-15px)
+.expand-enter-active,
+.expand-leave-active
+  overflow: hidden
+  transition: all .4s ease
+
+.expand-enter-from,
+.expand-leave-to
+  max-height: 0
+  opacity: 0
+  transform: translateY(-10px)
+
+.expand-enter-to,
+.expand-leave-from
+  max-height: 40px
+  opacity: 1
+  transform: translateY(0)
+  
+@media (max-width: 1400px)
+  h1 
+    font-size: 80px
+  h2 
+    font-size: 46px
+  h3 
+    font-size: 30px
+@media (max-width: 1200px)
+  h1 
+    font-size: 70px
+  h2 
+    font-size: 36px
+  h3 
+    font-size: 28px
+@media (max-width: 767px)
+  h1 
+    font-size: 48px
+  h2 
+    font-size: 32px
+  h3 
+    font-size: 24px
+  p 
+    font-size: 14px
