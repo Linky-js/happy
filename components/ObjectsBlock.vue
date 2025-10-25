@@ -4,14 +4,18 @@ import gsap from "gsap";
 import ObjectModal from "./objects/ObjectModal.vue";
 import GalleryModal from "./objects/GalleryModal.vue";
 
+const { data: regionsRef, pending, error } = await useAsyncData('regions', () =>
+  $fetch('https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/region?per_page=100')
+);
 
 const props = defineProps({
+  page: { type: Object, required: false, default: () => ({}) },
   objects: {
     type: Array, required: false, default: () => [
       {
         "id": 10,
         "category_id": 5,
-        "region_id": 5,
+        "region_id": 29,
         "name": "Цитадель Нарын Кала",
         "description": "Одно из древнейших поселений мира, впервые упоминается в VI в. до нашей эры в записках древнегреческого географа Гекатия Милетского. Существующий же город в Республике Дагестан был основан в 438 г. как персидская крепость. Сегодня от древнего Дербента остались расположенная на холме цитадель Нарын-кала (V–XVII вв.) и две стены, идущие от крепости к Каспийскому морю. Между стенами находится Старый город с сохранившимися средневековыми памятниками. Среди них: древнейшая в России мечеть Джума (VIII в.), священное кладбище Кырхляр  с мавзолеем Тути-Бике и несколько древних бань.",
         "tag": "derbent",
@@ -61,7 +65,7 @@ const props = defineProps({
       {
         "id": 11,
         "category_id": 5,
-        "region_id": 16,
+        "region_id": 29,
         "name": "Успенский собор и монастырь острова-града Свияжск",
         "description": "Свияжск, расположенный в месте слияния рек Волги, Свияги и Щуки, был основан Иваном Грозным в 1551 г. Он стал форпостом для завоевания русскими войсками Казани. В 1555 г. был заложен Богородице-Успенский мужской монастырь Свияжска, ставший духовно-просветительским центром миссионерской программы, разработанной царем. Ансамбль обители не имеет себе равных в Среднем Поволжье. Древнейшие его храмы — Успенский собор (1561 г.), один из двух в России, где сохранился полный цикл фресок эпохи Ивана Грозного, и Никольская трапезная церковь (1556 г.) с колокольней. \n",
         "tag": "uspenskii_sobor",
@@ -94,11 +98,8 @@ const props = defineProps({
     ]
   },
 })
-
-
-
+const regions = computed(() => regionsRef.value || []);
 const selectedRegion = ref(null);
-const regions = ref([]);
 const mapRoot = ref(null);
 const svgEl = ref(null);
 const markers = ref([]);
@@ -111,14 +112,6 @@ let dragging = false;
 let dragStart = { x: 0, y: 0 };
 let lastPan = { x: 0, y: 0 };
 
-// --- загрузка данных ---
-
-const getRegions = () => {
-  let authGet = `&auth=${user.username}:${user.auth_key}`;
-  axios
-    .get(`${apiUrl}/api-object-region/get-list${authGet}`)
-    .then((res) => { regions.value = res.data.object_regions || []; });
-};
 // --- утилиты ---
 function getPathByDataCode(code) {
   if (!svgEl.value) return null;
@@ -149,21 +142,21 @@ function dist(a, b) {
 
 // --- маркеры ---
 function buildInitialMarkers() {
+  
+
   if (!svgEl.value || !mapRoot.value) return [];
-  const byRegion = new Map();
-  for (const o of props.objects) {
-    const key = String(o.region_id);
-    if (!byRegion.has(key)) byRegion.set(key, []);
-    byRegion.get(key).push(o);
-  }
+  
 
   const initial = [];
   for (const region of regions.value) {
-    const regionIdStr = String(region.id);
-    const objs = byRegion.get(regionIdStr) || [];
+    
+
+    if (!region.acf.code_region) continue;
+
+    const objs = props.objects.filter(o => o.region_id === region.id);
     if (!objs.length) continue;
 
-    const pathEl = getPathByDataCode(region.data_code);
+    const pathEl = getPathByDataCode(region.acf.code_region);
     if (!pathEl) continue;
 
     const c = getElementCenterSVG(pathEl);
@@ -171,64 +164,26 @@ function buildInitialMarkers() {
     const local = screenToLocal(scr.x, scr.y);
 
     initial.push({
-      regions: [region],
-      regionIds: [region.id],
-      dataCodes: [region.data_code],
+      region,
       count: objs.length,
       svgX: c.x,
       svgY: c.y,
-      screenX: scr.x,
-      screenY: scr.y,
       left: local.left,
       top: local.top,
     });
+    
+
   }
+ 
+
   return initial;
-}
-
-function clusterMarkers(initialMarkers) {
-  let list = initialMarkers.map(m => ({ ...m }));
-  const minDist = Math.max(36, window.innerWidth * 0.028);
-
-  let merged = true;
-  while (merged) {
-    merged = false;
-    outer: for (let i = 0; i < list.length; i++) {
-      for (let j = i + 1; j < list.length; j++) {
-        const a = list[i], b = list[j];
-        if (dist({ x: a.screenX, y: a.screenY }, { x: b.screenX, y: b.screenY }) < minDist) {
-          const total = a.count + b.count;
-          const newX = (a.svgX * a.count + b.svgX * b.count) / total;
-          const newY = (a.svgY * a.count + b.svgY * b.count) / total;
-          const scr = svgToScreen(newX, newY);
-          const newLocal = screenToLocal(scr.x, scr.y);
-          list.splice(j, 1);
-          list.splice(i, 1, {
-            regions: [...a.regions, ...b.regions],
-            regionIds: Array.from(new Set([...a.regionIds, ...b.regionIds])),
-            dataCodes: Array.from(new Set([...a.dataCodes, ...b.dataCodes])),
-            count: total,
-            svgX: newX,
-            svgY: newY,
-            screenX: scr.x,
-            screenY: scr.y,
-            left: newLocal.left,
-            top: newLocal.top,
-          });
-          merged = true;
-          break outer;
-        }
-      }
-    }
-  }
-  return list;
 }
 
 async function recalcMarkers() {
   await nextTick();
-  markers.value = clusterMarkers(buildInitialMarkers());
-}
 
+  markers.value = buildInitialMarkers();
+}
 // --- GSAP zoom ---
 function zoomToPoint(svgX, svgY, targetScale) {
   const oldScale = transform.value.scale;
@@ -248,43 +203,8 @@ function zoomToPoint(svgX, svgY, targetScale) {
   });
 }
 
-function zoomToCluster(marker, e) {
-  console.log('marker', e);
-
-  if (!svgEl.value) return;
-  const boxes = marker.regions
-    .map(r => getPathByDataCode(r.data_code))
-    .filter(p => p)
-    .map(p => p.getBBox());
-  if (!boxes.length) return;
-
-  const union = boxes.reduce((acc, b) => acc ? {
-    x: Math.min(acc.x, b.x),
-    y: Math.min(acc.y, b.y),
-    x2: Math.max(acc.x2, b.x + b.width),
-    y2: Math.max(acc.y2, b.y + b.height)
-  } : { x: b.x, y: b.y, x2: b.x + b.width, y2: b.y + b.height }, null);
-
-  //   const centerX = union.x + (union.x2 - union.x)/2;
-  //   const centerY = union.y + (union.y2 - union.y)/2;
-
-  const mapRect = mapRoot.value.getBoundingClientRect();
-  const scaleX = (mapRect.width * 0.6) / (union.x2 - union.x);
-  const scaleY = (mapRect.height * 0.6) / (union.y2 - union.y);
-  const targetScale = Math.min(scaleX, scaleY);
-  const offsetX = e.clientX - mapRect.left;
-  const offsetY = e.clientY - mapRect.top;
-  const svgX = (offsetX - transform.value.x) / transform.value.scale;
-  const svgY = (offsetY - transform.value.y) / transform.value.scale;
-  zoomToPoint(svgX, svgY, targetScale);
-}
-
 function onMarkerClick(marker, e) {
-  if (marker.regionIds.length === 1) {
-    selectedRegion.value = marker;
-  } else {
-    zoomToCluster(marker, e);
-  }
+  selectedRegion.value = marker.region;
 }
 
 // --- трансформация ---
@@ -309,7 +229,7 @@ function onWheel(e) {
   const offsetY = e.clientY - mapRect.top;
   const svgX = (offsetX - transform.value.x) / transform.value.scale;
   const svgY = (offsetY - transform.value.y) / transform.value.scale;
-  console.log('new scale', newScale);
+ 
 
   transform.value.x = offsetX - svgX * newScale;
   transform.value.y = offsetY - svgY * newScale;
@@ -328,65 +248,92 @@ function onMouseUp() { dragging = false; }
 function clearActive() {
 
   svgEl.value.querySelectorAll("path.active").forEach(p => p.classList.remove("active"));
-
+  mapRoot.value.classList.remove("active");
   mapRoot.value.querySelectorAll(".marker.active").forEach(m => m.classList.remove("active"));
 }
 
-function markerPathHover(marker, el) {
+function markerPathHover(marker, event) {
   clearActive();
+  const el = event.currentTarget;
 
   if (el) el.classList.add("active");
 
-  marker.dataCodes.forEach(code => {
-    const path = getPathByDataCode(code);
-    if (path) path.classList.add("active");
-  });
+  const path = getPathByDataCode(marker.region.acf.code_region);
+  if (path) {
+    path.classList.add("active")
+    mapRoot.value.classList.add("active");
+  };
+
 }
 
 function markerPathLeave() {
   clearActive();
 }
 // --- мобильный pinch ---
+let pinch = {
+  active: false,
+  startDist: 0,
+  startScale: 1,
+  startCenter: { x: 0, y: 0 },
+  startX: 0,
+  startY: 0
+};
 let pinchStart = null;
 function onTouchStart(e) {
   if (e.touches.length === 2) {
-    e.preventDefault(); // только тут блокируем скролл страницы
-    const dx = e.touches[0].clientX - e.touches[1].clientX;
-    const dy = e.touches[0].clientY - e.touches[1].clientY;
-    pinchStart = {
-      distance: Math.sqrt(dx * dx + dy * dy),
-      center: {
-        x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
-        y: (e.touches[0].clientY + e.touches[1].clientY) / 2
-      },
-      scale: transform.value.scale
+    pinch.active = true;
+    e.preventDefault();
+
+    const [t1, t2] = e.touches;
+    const dx = t1.clientX - t2.clientX;
+    const dy = t1.clientY - t2.clientY;
+
+    pinch.startDist = Math.hypot(dx, dy);
+    pinch.startScale = transform.value.scale;
+
+    pinch.startCenter = {
+      x: (t1.clientX + t2.clientX) / 2,
+      y: (t1.clientY + t2.clientY) / 2
     };
-  } else {
-    pinchStart = null; // одиночный палец → ничего не делаем, пусть страница скроллится
+
+    pinch.startX = transform.value.x;
+    pinch.startY = transform.value.y;
   }
 }
 
 function onTouchMove(e) {
-  if (e.touches.length === 2 && pinchStart) {
-    e.preventDefault(); // блокируем скролл только во время pinch
-    const dx = e.touches[0].clientX - e.touches[1].clientX;
-    const dy = e.touches[0].clientY - e.touches[1].clientY;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+  if (!pinch.active || e.touches.length !== 2) return;
 
-    const targetScale = Math.min(10, Math.max(1, pinchStart.scale * distance / pinchStart.distance));
-    const mapRect = mapRoot.value.getBoundingClientRect();
-    const svgX = (pinchStart.center.x - mapRect.left - transform.value.x) / transform.value.scale;
-    const svgY = (pinchStart.center.y - mapRect.top - transform.value.y) / transform.value.scale;
+  e.preventDefault();
 
-    zoomToPoint(svgX, svgY, targetScale);
-  }
+  const [t1, t2] = e.touches;
+  const dx = t1.clientX - t2.clientX;
+  const dy = t1.clientY - t2.clientY;
+  const dist = Math.hypot(dx, dy);
+
+  const scale = Math.min(10, Math.max(1, pinch.startScale * dist / pinch.startDist));
+
+  const mapRect = mapRoot.value.getBoundingClientRect();
+  const currentCenter = {
+    x: (t1.clientX + t2.clientX) / 2,
+    y: (t1.clientY + t2.clientY) / 2
+  };
+
+  const svgX = (pinch.startCenter.x - mapRect.left - pinch.startX) / pinch.startScale;
+  const svgY = (pinch.startCenter.y - mapRect.top - pinch.startY) / pinch.startScale;
+
+  transform.value.scale = scale;
+  transform.value.x = currentCenter.x - svgX * scale - mapRect.left;
+  transform.value.y = currentCenter.y - svgY * scale - mapRect.top;
+
+  applyTransform(); // without GSAP
 }
 
-function onTouchEnd(e) {
-  if (e.touches.length < 2) {
-    pinchStart = null;
-  }
+
+function onTouchEnd() {
+  if (pinch.active) pinch.active = false;
 }
+
 function onYandexMarkerClick(e) {
   openObject.value = e;
 
@@ -394,8 +341,6 @@ function onYandexMarkerClick(e) {
 const openGalleryRegion = ref(null);
 const openGalleryPhoto = ref(null);
 function goOpenGallery(region, currentPhoto) {
-  console.log('region', region);
-  console.log('currentPhoto', currentPhoto);
 
   openGalleryRegion.value = region;
   openGalleryPhoto.value = currentPhoto;
@@ -408,9 +353,11 @@ function closeOpenObject() {
 
 }
 // --- watch & mounted ---
-watch(() => regions.value.length, val => { if (val > 0) recalcMarkers(); });
+watch(() => regions.length, val => { if (val > 0) recalcMarkers(); });
 
 onMounted(async () => {
+
+
   await nextTick();
   svgEl.value = mapRoot.value.querySelector("#svgRoot");
 
@@ -759,22 +706,40 @@ onBeforeUnmount(() => {
             <div class="markers-layer" aria-hidden="true">
               <div v-for="(m, idx) in markers" :key="idx" class="marker"
                 :style="{ left: m.left + 'px', top: m.top + 'px' }" @click="onMarkerClick(m, $event)"
-                :title="m.regions.map(r => r.name).join(', ') + ' — ' + m.count" :data-codes="m.dataCodes.join(', ')"
-                @mouseenter="markerPathHover(m)" @mouseleave="markerPathLeave(m)">
-                <div class="marker__dot" :class="{ 'multi': m.regionIds.length > 1 }">
-                  <span v-if="m.regionIds.length === 1">{{ m.count }}</span>
-                  <span v-else>{{ m.count }}</span>
+                :title="m?.region.title.rendered" :data-code="m.region.acf.code_region"
+                @mouseenter="markerPathHover(m, $event)" @mouseleave="markerPathLeave(m, $event)">
+                <div class="marker__dot">
+                  <svg width="32" height="37" viewBox="0 0 32 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g clip-path="url(#clip0_103_963)" filter="url(#filter0_d_103_963)">
+                      <g filter="url(#filter1_d_103_963)">
+                        <path
+                          d="M7.64342 4.7097C9.87107 2.55621 12.8731 1.35041 15.9998 1.35328C19.1313 1.35328 22.1373 2.5584 24.3562 4.7097C26.3654 6.65525 27.4121 8.83315 27.6887 11.095C27.964 13.3373 27.472 15.588 26.5337 17.6987C24.6713 21.8977 20.9694 25.7161 17.4187 28.2005C17.0048 28.4911 16.5087 28.6474 15.9998 28.6474C15.4909 28.6474 14.9948 28.4911 14.5809 28.2005C11.0302 25.7161 7.32827 21.8963 5.46448 17.6987C4.5276 15.588 4.03705 13.3373 4.31085 11.0936C4.58749 8.83315 5.63418 6.65665 7.64342 4.7097ZM12.0783 12.2008C12.0783 11.1799 12.4914 10.2009 13.2269 9.47904C13.9623 8.75719 14.9597 8.35166 15.9998 8.35166C17.0398 8.35166 18.0373 8.75719 18.7727 9.47904C19.5081 10.2009 19.9213 11.1799 19.9213 12.2008C19.9213 13.2216 19.5081 14.2007 18.7727 14.9225C18.0373 15.6444 17.0398 16.0499 15.9998 16.0499C14.9597 16.0499 13.9623 15.6444 13.2269 14.9225C12.4914 14.2007 12.0783 13.2216 12.0783 12.2008Z"
+                          fill="white" />
+                      </g>
+                      <path
+                        d="M16 6.05884C14.6969 6.05884 13.4232 6.44523 12.3398 7.16916C11.2563 7.89308 10.4119 8.92202 9.91325 10.1259C9.4146 11.3297 9.28413 12.6544 9.53834 13.9324C9.79255 15.2104 10.42 16.3843 11.3414 17.3057C12.2628 18.227 13.4367 18.8545 14.7147 19.1087C15.9927 19.3629 17.3173 19.2325 18.5212 18.7338C19.725 18.2352 20.754 17.3907 21.4779 16.3073C22.2018 15.2239 22.5882 13.9501 22.5882 12.6471C22.5882 10.8998 21.8941 9.22402 20.6586 7.98849C19.423 6.75295 17.7473 6.05884 16 6.05884ZM18.4116 10.2796C18.5789 10.2795 18.7424 10.3289 18.8815 10.4217C19.0206 10.5145 19.1291 10.6465 19.1932 10.801C19.2573 10.9555 19.2741 11.1255 19.2415 11.2895C19.2089 11.4536 19.1284 11.6042 19.0101 11.7225C18.8919 11.8407 18.7412 11.9213 18.5772 11.9538C18.4131 11.9864 18.2431 11.9696 18.0886 11.9055C17.9342 11.8415 17.8022 11.733 17.7094 11.5939C17.6166 11.4547 17.5671 11.2912 17.5673 11.124C17.5673 10.9 17.6562 10.6853 17.8146 10.5269C17.9729 10.3686 18.1877 10.2796 18.4116 10.2796ZM13.5883 10.2796C13.7556 10.2795 13.9191 10.3289 14.0582 10.4217C14.1974 10.5145 14.3058 10.6465 14.3699 10.801C14.434 10.9555 14.4508 11.1255 14.4182 11.2895C14.3856 11.4536 14.3051 11.6042 14.1869 11.7225C14.0686 11.8407 13.9179 11.9213 13.7539 11.9538C13.5898 11.9864 13.4198 11.9696 13.2654 11.9055C13.1109 11.8415 12.9789 11.733 12.8861 11.5939C12.7933 11.4547 12.7438 11.2912 12.744 11.124C12.7442 10.9001 12.8333 10.6855 12.9916 10.5272C13.1499 10.3689 13.3645 10.2799 13.5883 10.2796ZM19.7102 14.3271C19.4337 15.9056 17.8776 17.0005 16 17.0005C14.1223 17.0005 12.5672 15.9056 12.2906 14.3271C12.2877 14.311 12.2859 14.2948 12.2854 14.2785C12.2854 14.0505 12.5628 13.9032 12.8056 13.9864C13.7418 14.3097 14.834 14.4744 16.0008 14.4744C17.1677 14.4744 18.2599 14.3097 19.1961 13.9864C19.438 13.8997 19.7163 14.0497 19.7163 14.2785C19.7155 14.2948 19.7135 14.3111 19.7102 14.3271Z"
+                        fill="#2E6CF0" />
+                    </g>
+                  </svg>
 
                 </div>
                 <div class="custom__title">
-                  <span v-for="reg in m.regions" :key="reg.id">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <div class="head">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="14" viewBox="0 0 12 14" fill="none">
                       <path
-                        d="M8 1.33203C9.5913 1.33203 11.1174 1.96417 12.2426 3.08939C13.3679 4.21461 14 5.74073 14 7.33203C14 9.38136 12.8827 11.0587 11.7053 12.262C11.1171 12.8567 10.4753 13.3959 9.788 13.8727L9.504 14.066L9.37067 14.1547L9.11933 14.3147L8.89533 14.4514L8.618 14.6127C8.42976 14.7201 8.21675 14.7767 8 14.7767C7.78325 14.7767 7.57024 14.7201 7.382 14.6127L7.10467 14.4514L6.758 14.238L6.63 14.1547L6.35667 13.9727C5.61522 13.471 4.9246 12.8981 4.29467 12.262C3.11733 11.058 2 9.38136 2 7.33203C2 5.74073 2.63214 4.21461 3.75736 3.08939C4.88258 1.96417 6.4087 1.33203 8 1.33203ZM8 5.33203C7.73736 5.33203 7.47728 5.38376 7.23463 5.48427C6.99198 5.58478 6.7715 5.7321 6.58579 5.91782C6.40007 6.10353 6.25275 6.32401 6.15224 6.56666C6.05173 6.80932 6 7.06939 6 7.33203C6 7.59467 6.05173 7.85475 6.15224 8.0974C6.25275 8.34005 6.40007 8.56053 6.58579 8.74624C6.7715 8.93196 6.99198 9.07928 7.23463 9.17979C7.47728 9.2803 7.73736 9.33203 8 9.33203C8.53043 9.33203 9.03914 9.12132 9.41421 8.74624C9.78929 8.37117 10 7.86246 10 7.33203C10 6.8016 9.78929 6.29289 9.41421 5.91782C9.03914 5.54274 8.53043 5.33203 8 5.33203Z"
-                        fill="#5F22C1" />
+                        d="M6 0C7.5913 0 9.11742 0.632141 10.2426 1.75736C11.3679 2.88258 12 4.4087 12 6C12 8.04933 10.8827 9.72667 9.70533 10.93C9.11712 11.5247 8.47528 12.0639 7.788 12.5407L7.504 12.734L7.37067 12.8227L7.11933 12.9827L6.89533 13.1193L6.618 13.2807C6.42976 13.3881 6.21675 13.4446 6 13.4446C5.78325 13.4446 5.57024 13.3881 5.382 13.2807L5.10467 13.1193L4.758 12.906L4.63 12.8227L4.35667 12.6407C3.61522 12.139 2.9246 11.5661 2.29467 10.93C1.11733 9.726 0 8.04933 0 6C0 4.4087 0.632141 2.88258 1.75736 1.75736C2.88258 0.632141 4.4087 0 6 0ZM6 4C5.73736 4 5.47728 4.05173 5.23463 4.15224C4.99198 4.25275 4.7715 4.40007 4.58579 4.58579C4.40007 4.7715 4.25275 4.99198 4.15224 5.23463C4.05173 5.47728 4 5.73736 4 6C4 6.26264 4.05173 6.52272 4.15224 6.76537C4.25275 7.00802 4.40007 7.2285 4.58579 7.41421C4.7715 7.59993 4.99198 7.74725 5.23463 7.84776C5.47728 7.94827 5.73736 8 6 8C6.53043 8 7.03914 7.78929 7.41421 7.41421C7.78929 7.03914 8 6.53043 8 6C8 5.46957 7.78929 4.96086 7.41421 4.58579C7.03914 4.21071 6.53043 4 6 4Z"
+                        fill="#164CBF" />
                     </svg>
-                    {{ reg.name }}
-                  </span>
+                    {{ m.region.title.rendered }}
+                  </div>
+                  <div class="custom__title--info">
+                    <div class="label">
+                      В этом регионе:
+                    </div>
+                    <div class="value">
+                      {{ m.region.count }} истории счастья
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -887,6 +852,9 @@ onBeforeUnmount(() => {
   z-index: 2
 
 .map
+  &.active
+    #viewport path
+      fill: rgba(209, 213, 219, 1)
   #svgRoot
     display: block
     max-width: 100%
@@ -896,9 +864,10 @@ onBeforeUnmount(() => {
     fill: rgba(46, 108, 240, 1)
     stroke: #DDE1E8
     cursor: pointer
+    transition: all .3s ease
 
     &.active
-      fill: #5F22C1
+      fill: rgba(46, 108, 240, 1)
 
 /* слой маркеров
 
@@ -910,15 +879,14 @@ onBeforeUnmount(() => {
   height: 100%
   pointer-events: none
 
-  /* чтобы svg клики не блокировались; каждый маркер переопределит pointer-events
-
-/* один маркер
-
 .marker
   position: absolute
   transform: translate(-50%, -50%)
+  &.active
+    .custom__title
+      visibility: visible
+      opacity: 1
 
-  /* центрируем маркер
   pointer-events: auto
   z-index: 2
 
@@ -930,12 +898,6 @@ onBeforeUnmount(() => {
   left: 50%
   transform: translateX(-50%)
   transition: all .3s ease
-  color: #5F22C1
-  text-align: center
-  font-family: Onest
-  font-size: 14px
-  font-style: normal
-  font-weight: 500
   line-height: normal
   display: flex
   align-items: center
@@ -948,6 +910,41 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(10px)
   padding: 14px
 
+  .head
+    color: #164CBF
+    text-align: center
+    font-family: "TikTok Sans"
+    font-size: 14px
+    font-style: normal
+    font-weight: 500
+    line-height: normal
+    display: flex
+    align-items: center
+    gap: 7px
+    white-space: nowrap
+
+  .custom__title--info
+    display: flex
+    flex-direction: column
+    gap: 4px
+    width: 100%
+
+    .label
+      color: #787878
+      font-family: "TikTok Sans"
+      font-size: 12px
+      font-style: normal
+      font-weight: 400
+      line-height: normal
+
+    .value
+      color: #2B2B2B
+      font-family: "TikTok Sans"
+      font-size: 14px
+      font-style: normal
+      font-weight: 500
+      line-height: normal
+
   span
     display: flex
     align-items: center
@@ -956,17 +953,13 @@ onBeforeUnmount(() => {
 /* вид круга
 
 .marker__dot
-  min-width: 48px
-  min-height: 48px
+  min-width: 32px
+  min-height: 32px
   display: inline-flex
   align-items: center
   justify-content: center
-  border-radius: 50%
-  background: #5f22c1
   color: white
-  padding: 6px
   font-weight: 600
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15)
   transition: transform .18s ease
 
   &.multi

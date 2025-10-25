@@ -4,5 +4,15 @@ export default defineNuxtConfig({
   css: [
     '~/assets/sass/main.sass'
   ],
-  devtools: { enabled: true }
+  devtools: { enabled: true },
+  app: {
+    head: {
+      meta: [
+        {
+          name: 'viewport',
+          content: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no'
+        }
+      ]
+    }
+  }
 })
