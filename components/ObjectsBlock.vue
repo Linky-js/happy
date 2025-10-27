@@ -2,104 +2,38 @@
 import { ref, onMounted, watch, nextTick, onBeforeUnmount, defineProps } from "vue";
 import gsap from "gsap";
 import ObjectModal from "./objects/ObjectModal.vue";
-import GalleryModal from "./objects/GalleryModal.vue";
+import ModalVideo from "./ModalVideo.vue";
 
-const { data: regionsRef, pending, error } = await useAsyncData('regions', () =>
+const { data: regionsRef } = await useAsyncData('regions', () =>
   $fetch('https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/region?per_page=100')
 );
 
+const videosRef = ref([]);
+onMounted(async () => {
+  videosRef.value = await $fetch(
+    'https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/video?per_page=100&_embed'
+  );
+  console.log("VIDEOS", videosRef.value.map(v => v.acf?.code_region));
+  recalcMarkers();
+});
+const { data: postsRef } = await useAsyncData('posts', () =>
+  $fetch('https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/posts?per_page=100&_embed')
+)
+const posts = computed(() => postsRef.value || [])
+
 const props = defineProps({
   page: { type: Object, required: false, default: () => ({}) },
-  objects: {
-    type: Array, required: false, default: () => [
-      {
-        "id": 10,
-        "category_id": 5,
-        "region_id": 29,
-        "name": "Цитадель Нарын Кала",
-        "description": "Одно из древнейших поселений мира, впервые упоминается в VI в. до нашей эры в записках древнегреческого географа Гекатия Милетского. Существующий же город в Республике Дагестан был основан в 438 г. как персидская крепость. Сегодня от древнего Дербента остались расположенная на холме цитадель Нарын-кала (V–XVII вв.) и две стены, идущие от крепости к Каспийскому морю. Между стенами находится Старый город с сохранившимися средневековыми памятниками. Среди них: древнейшая в России мечеть Джума (VIII в.), священное кладбище Кырхляр  с мавзолеем Тути-Бике и несколько древних бань.",
-        "tag": "derbent",
-        "lat": "42.0678",
-        "lon": "48.2899",
-        "slag": "derbent",
-        "newsToObject": null,
-        "news": [],
-        "img": [
-          {
-            "id": 8,
-            "object_id": 10,
-            "img": "https://api.культпросвет.fun/web/uploads/products//product__68de70e8282e7.webp",
-            "alt": "Цитадель Нарын Кала",
-            iframe: 'link'
-          },
-          {
-            "id": 9,
-            "object_id": 10,
-            "img": "https://api.культпросвет.fun/web/uploads/products//product__68de70e86b045.webp",
-            "alt": "Цитадель Нарын Кала",
-            iframe: 'link'
-          },
-          {
-            "id": 10,
-            "object_id": 10,
-            "img": "https://api.культпросвет.fun/web/uploads/products//product__68de70e8a9c49.webp",
-            "alt": "Цитадель Нарын Кала",
-            iframe: 'link'
-          },
-          {
-            "id": 11,
-            "object_id": 10,
-            "img": "https://api.культпросвет.fun/web/uploads/products//product__68de70e8e342e.jpg",
-            "alt": "Цитадель Нарын Кала",
-            iframe: 'link'
-          },
-          {
-            "id": 12,
-            "object_id": 10,
-            "img": "https://api.культпросвет.fun/web/uploads/products//product__68e17500e7e2e.webp",
-            "alt": "Цитадель Нарын Кала",
-            iframe: 'link'
-          }
-        ]
-      },
-      {
-        "id": 11,
-        "category_id": 5,
-        "region_id": 29,
-        "name": "Успенский собор и монастырь острова-града Свияжск",
-        "description": "Свияжск, расположенный в месте слияния рек Волги, Свияги и Щуки, был основан Иваном Грозным в 1551 г. Он стал форпостом для завоевания русскими войсками Казани. В 1555 г. был заложен Богородице-Успенский мужской монастырь Свияжска, ставший духовно-просветительским центром миссионерской программы, разработанной царем. Ансамбль обители не имеет себе равных в Среднем Поволжье. Древнейшие его храмы — Успенский собор (1561 г.), один из двух в России, где сохранился полный цикл фресок эпохи Ивана Грозного, и Никольская трапезная церковь (1556 г.) с колокольней. \n",
-        "tag": "uspenskii_sobor",
-        "lat": "55.77222",
-        "lon": "48.65972",
-        "slag": "uspenskii_sobor",
-        "newsToObject": null,
-        "news": [],
-        "img": [
-          {
-            "id": 13,
-            "object_id": 11,
-            "img": "products//product__68e190e06855b.jpg",
-            "alt": "Успенский собор и монастырь острова-града Свияжск"
-          },
-          {
-            "id": 14,
-            "object_id": 11,
-            "img": "products//product__68e190e0a1ebc.jpg",
-            "alt": "Успенский собор и монастырь острова-града Свияжск"
-          },
-          {
-            "id": 15,
-            "object_id": 11,
-            "img": "products//product__68e190e0d2d6f.jpg",
-            "alt": "Успенский собор и монастырь острова-града Свияжск"
-          }
-        ]
-      },
-    ]
-  },
+  page: {
+    type: Object,
+    required: true
+  }
 })
 const regions = computed(() => regionsRef.value || []);
-const selectedRegion = ref(null);
+const videos = computed(() => videosRef.value || []);
+
+const showModal = ref(false);
+const currentVideo = ref(null)
+
 const mapRoot = ref(null);
 const svgEl = ref(null);
 const markers = ref([]);
@@ -142,21 +76,29 @@ function dist(a, b) {
 
 // --- маркеры ---
 function buildInitialMarkers() {
-  
-
   if (!svgEl.value || !mapRoot.value) return [];
-  
 
   const initial = [];
+
   for (const region of regions.value) {
-    
+    const regionId = region.id;
+    const code = region.acf?.code_region;
+    if (!regionId || !code) continue;
 
-    if (!region.acf.code_region) continue;
+    const regionVideos = videos.value.filter(v => {
+      const relatedRegions = v.acf?.code_region;
+      return Array.isArray(relatedRegions) && relatedRegions.some(r => r?.ID === regionId);
+    });
 
-    const objs = props.objects.filter(o => o.region_id === region.id);
-    if (!objs.length) continue;
+    const regionPosts = posts.value.filter(p => {
+      const relatedRegions = p.acf?.code_region;
+      return Array.isArray(relatedRegions) && relatedRegions.some(r => r?.ID === regionId);
+    });
 
-    const pathEl = getPathByDataCode(region.acf.code_region);
+    // ⬇️ теперь маркер ставится, если есть хотя бы видео или пост
+    if (!regionVideos.length && !regionPosts.length) continue;
+
+    const pathEl = getPathByDataCode(code);
     if (!pathEl) continue;
 
     const c = getElementCenterSVG(pathEl);
@@ -165,19 +107,19 @@ function buildInitialMarkers() {
 
     initial.push({
       region,
-      count: objs.length,
-      svgX: c.x,
-      svgY: c.y,
+      count: regionVideos.length + regionPosts.length,
       left: local.left,
       top: local.top,
+      code_region: code,
+      videos: regionVideos,
+      posts: regionPosts,
     });
-    
-
   }
- 
 
+  console.log("✅ markers built:", initial);
   return initial;
 }
+
 
 async function recalcMarkers() {
   await nextTick();
@@ -203,8 +145,47 @@ function zoomToPoint(svgX, svgY, targetScale) {
   });
 }
 
-function onMarkerClick(marker, e) {
-  selectedRegion.value = marker.region;
+function onMarkerClick(marker) {
+  const region = marker.region;
+  const regionId = region.id;
+
+  if (!regionId) return;
+
+  // 🎥 Ищем видео по совпадению ID региона
+  const regionVideos = videosRef.value?.filter(v => {
+    const relatedRegions = v.acf?.code_region;
+    return Array.isArray(relatedRegions) && relatedRegions.some(r => r?.ID === regionId);
+  }) || [];
+
+  // 📰 Ищем статьи по совпадению ID региона
+  const regionPosts = posts.value?.filter(p => {
+    const related = p.acf?.code_region;
+    if (!related) return false;
+
+    if (Array.isArray(related)) {
+      // если массив
+      return related.some(r => r?.ID === regionId);
+    } else if (typeof related === 'object') {
+      // если одиночный объект
+      return related.ID === regionId;
+    }
+
+    return false;
+  }) || [];
+
+  // Прячем подсказку
+  const infoBox = document.querySelector('.info__box');
+  if (infoBox) infoBox.classList.add('hide');
+
+  // Открываем модальное окно с данными региона
+  openObject.value = {
+    region,
+    videos: regionVideos,
+    posts: regionPosts
+  };
+
+  console.log('🎥 Videos for region:', regionVideos);
+  console.log('📰 Posts for region:', regionPosts);
 }
 
 // --- трансформация ---
@@ -229,7 +210,7 @@ function onWheel(e) {
   const offsetY = e.clientY - mapRect.top;
   const svgX = (offsetX - transform.value.x) / transform.value.scale;
   const svgY = (offsetY - transform.value.y) / transform.value.scale;
- 
+
 
   transform.value.x = offsetX - svgX * newScale;
   transform.value.y = offsetY - svgY * newScale;
@@ -338,21 +319,23 @@ function onYandexMarkerClick(e) {
   openObject.value = e;
 
 }
-const openGalleryRegion = ref(null);
-const openGalleryPhoto = ref(null);
-function goOpenGallery(region, currentPhoto) {
 
-  openGalleryRegion.value = region;
-  openGalleryPhoto.value = currentPhoto;
-
-
-}
 function closeOpenObject() {
   openObject.value = null;
   flagMap.value = true;
-
+  const infoBox = document.querySelector('.info__box');
+  if (infoBox) infoBox.classList.remove('hide');
 }
-// --- watch & mounted ---
+
+function handlePlay(video) {
+  if (video?.acf?.link) {
+    currentVideo.value = video.acf.link
+    showModal.value = true
+  } else {
+    console.warn('⚠️ У этого видео нет ссылки в ACF')
+  }
+}
+
 watch(() => regions.length, val => { if (val > 0) recalcMarkers(); });
 
 onMounted(async () => {
@@ -389,47 +372,72 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <GalleryModal v-if="openGalleryRegion" :object-item="openGalleryRegion" :current-photo="openGalleryPhoto.url"
-    @close="openGalleryRegion = null" />
   <div class="objects" id="objects">
+    <ModalVideo v-if="showModal" :linkVideo="currentVideo" @close="showModal = false" />
     <div class="container">
       <div class="objects__head">
-        <h2>Карта счастья России</h2>
-        <p>Наша страна огромна, но в каждом её уголке — свои яркие истории</p>
+        <h2>{{ props.page.acf?.['h-3'] }}</h2>
+        <p>{{ props.page.acf?.['desk-3'] }}</p>
       </div>
     </div>
     <div class="map_wrapper">
-      <div class="container">
-        <ObjectModal v-if="openObject" :open-object="openObject" @photomodal="goOpenGallery" @close="closeOpenObject" />
-      </div>
+      <ObjectModal v-if="openObject" :open-object="openObject" @close="closeOpenObject" @play="handlePlay" />
       <div class="map" ref="mapRoot" style="position:relative;">
         <transition name="fade">
           <div class="map__content">
-            <div class="info">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <g clip-path="url(#clip0_69_2124)">
-                  <mask id="mask0_69_2124" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="20"
-                    height="20">
-                    <path
-                      d="M9.99984 18.3346C11.0944 18.336 12.1784 18.1211 13.1896 17.7022C14.2009 17.2833 15.1194 16.6687 15.8923 15.8938C16.6673 15.1208 17.2818 14.2023 17.7007 13.1911C18.1196 12.1799 18.3345 11.0959 18.3332 10.0013C18.3345 8.90676 18.1196 7.82274 17.7007 6.81151C17.2818 5.80029 16.6673 4.8818 15.8923 4.10881C15.1194 3.33388 14.2009 2.71932 13.1896 2.30044C12.1784 1.88156 11.0944 1.66663 9.99984 1.66798C8.9053 1.66663 7.82127 1.88156 6.81005 2.30044C5.79882 2.71932 4.88033 3.33388 4.10734 4.10881C3.33241 4.8818 2.71785 5.80029 2.29897 6.81151C1.8801 7.82274 1.66516 8.90676 1.66651 10.0013C1.66516 11.0959 1.8801 12.1799 2.29897 13.1911C2.71785 14.2023 3.33241 15.1208 4.10734 15.8938C4.88033 16.6687 5.79882 17.2833 6.81005 17.7022C7.82127 18.1211 8.9053 18.336 9.99984 18.3346Z"
-                      fill="white" stroke="white" stroke-width="2" stroke-linejoin="round" />
-                    <path fill-rule="evenodd" clip-rule="evenodd"
-                      d="M9.99967 4.58594C10.2759 4.58594 10.5409 4.69568 10.7362 4.89103C10.9316 5.08639 11.0413 5.35134 11.0413 5.6276C11.0413 5.90387 10.9316 6.16882 10.7362 6.36417C10.5409 6.55952 10.2759 6.66927 9.99967 6.66927C9.72341 6.66927 9.45846 6.55952 9.2631 6.36417C9.06775 6.16882 8.95801 5.90387 8.95801 5.6276C8.95801 5.35134 9.06775 5.08639 9.2631 4.89103C9.45846 4.69568 9.72341 4.58594 9.99967 4.58594Z"
-                      fill="black" />
-                    <path d="M10.2083 14.1693V8.33594H9.375M8.75 14.1693H11.6667" stroke="black" stroke-width="2"
-                      stroke-linecap="round" stroke-linejoin="round" />
-                  </mask>
-                  <g mask="url(#mask0_69_2124)">
-                    <path d="M0 0H20V20H0V0Z" fill="#5F22C1" />
+            <div class="info__box">
+              <div class="info info__scroll">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <g clip-path="url(#clip0_69_2124)">
+                    <mask id="mask0_69_2124" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0"
+                      width="20" height="20">
+                      <path
+                        d="M9.99984 18.3346C11.0944 18.336 12.1784 18.1211 13.1896 17.7022C14.2009 17.2833 15.1194 16.6687 15.8923 15.8938C16.6673 15.1208 17.2818 14.2023 17.7007 13.1911C18.1196 12.1799 18.3345 11.0959 18.3332 10.0013C18.3345 8.90676 18.1196 7.82274 17.7007 6.81151C17.2818 5.80029 16.6673 4.8818 15.8923 4.10881C15.1194 3.33388 14.2009 2.71932 13.1896 2.30044C12.1784 1.88156 11.0944 1.66663 9.99984 1.66798C8.9053 1.66663 7.82127 1.88156 6.81005 2.30044C5.79882 2.71932 4.88033 3.33388 4.10734 4.10881C3.33241 4.8818 2.71785 5.80029 2.29897 6.81151C1.8801 7.82274 1.66516 8.90676 1.66651 10.0013C1.66516 11.0959 1.8801 12.1799 2.29897 13.1911C2.71785 14.2023 3.33241 15.1208 4.10734 15.8938C4.88033 16.6687 5.79882 17.2833 6.81005 17.7022C7.82127 18.1211 8.9053 18.336 9.99984 18.3346Z"
+                        fill="white" stroke="white" stroke-width="2" stroke-linejoin="round" />
+                      <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M9.99967 4.58594C10.2759 4.58594 10.5409 4.69568 10.7362 4.89103C10.9316 5.08639 11.0413 5.35134 11.0413 5.6276C11.0413 5.90387 10.9316 6.16882 10.7362 6.36417C10.5409 6.55952 10.2759 6.66927 9.99967 6.66927C9.72341 6.66927 9.45846 6.55952 9.2631 6.36417C9.06775 6.16882 8.95801 5.90387 8.95801 5.6276C8.95801 5.35134 9.06775 5.08639 9.2631 4.89103C9.45846 4.69568 9.72341 4.58594 9.99967 4.58594Z"
+                        fill="black" />
+                      <path d="M10.2083 14.1693V8.33594H9.375M8.75 14.1693H11.6667" stroke="black" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    </mask>
+                    <g mask="url(#mask0_69_2124)">
+                      <path d="M0 0H20V20H0V0Z" fill="#646871" />
+                    </g>
                   </g>
-                </g>
-                <defs>
-                  <clipPath id="clip0_69_2124">
-                    <rect width="20" height="20" fill="white" />
-                  </clipPath>
-                </defs>
-              </svg>
-              Выберите регион, чтобы увидеть больше объектов
+                  <defs>
+                    <clipPath id="clip0_69_2124">
+                      <rect width="20" height="20" fill="white" />
+                    </clipPath>
+                  </defs>
+                </svg>
+                Используйте скролл мыши чтобы приблизить/отдалить
+              </div>
+              <div class="info info__touch">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <g clip-path="url(#clip0_69_2124)">
+                    <mask id="mask0_69_2124" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0"
+                      width="20" height="20">
+                      <path
+                        d="M9.99984 18.3346C11.0944 18.336 12.1784 18.1211 13.1896 17.7022C14.2009 17.2833 15.1194 16.6687 15.8923 15.8938C16.6673 15.1208 17.2818 14.2023 17.7007 13.1911C18.1196 12.1799 18.3345 11.0959 18.3332 10.0013C18.3345 8.90676 18.1196 7.82274 17.7007 6.81151C17.2818 5.80029 16.6673 4.8818 15.8923 4.10881C15.1194 3.33388 14.2009 2.71932 13.1896 2.30044C12.1784 1.88156 11.0944 1.66663 9.99984 1.66798C8.9053 1.66663 7.82127 1.88156 6.81005 2.30044C5.79882 2.71932 4.88033 3.33388 4.10734 4.10881C3.33241 4.8818 2.71785 5.80029 2.29897 6.81151C1.8801 7.82274 1.66516 8.90676 1.66651 10.0013C1.66516 11.0959 1.8801 12.1799 2.29897 13.1911C2.71785 14.2023 3.33241 15.1208 4.10734 15.8938C4.88033 16.6687 5.79882 17.2833 6.81005 17.7022C7.82127 18.1211 8.9053 18.336 9.99984 18.3346Z"
+                        fill="white" stroke="white" stroke-width="2" stroke-linejoin="round" />
+                      <path fill-rule="evenodd" clip-rule="evenodd"
+                        d="M9.99967 4.58594C10.2759 4.58594 10.5409 4.69568 10.7362 4.89103C10.9316 5.08639 11.0413 5.35134 11.0413 5.6276C11.0413 5.90387 10.9316 6.16882 10.7362 6.36417C10.5409 6.55952 10.2759 6.66927 9.99967 6.66927C9.72341 6.66927 9.45846 6.55952 9.2631 6.36417C9.06775 6.16882 8.95801 5.90387 8.95801 5.6276C8.95801 5.35134 9.06775 5.08639 9.2631 4.89103C9.45846 4.69568 9.72341 4.58594 9.99967 4.58594Z"
+                        fill="black" />
+                      <path d="M10.2083 14.1693V8.33594H9.375M8.75 14.1693H11.6667" stroke="black" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    </mask>
+                    <g mask="url(#mask0_69_2124)">
+                      <path d="M0 0H20V20H0V0Z" fill="#646871" />
+                    </g>
+                  </g>
+                  <defs>
+                    <clipPath id="clip0_69_2124">
+                      <rect width="20" height="20" fill="white" />
+                    </clipPath>
+                  </defs>
+                </svg>
+                Нажмите на регион, чтобы увидеть видео
+              </div>
             </div>
             <svg ref="svgRoot" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://www.w3.org/2000/svg" id="svgRoot"
               xmlns:xlink="http://www.w3.org/1999/xlink" version="1.2" baseProfile="tiny" x="0px" y="0px"
@@ -721,7 +729,6 @@ onBeforeUnmount(() => {
                         fill="#2E6CF0" />
                     </g>
                   </svg>
-
                 </div>
                 <div class="custom__title">
                   <div class="head">
@@ -753,6 +760,9 @@ onBeforeUnmount(() => {
 
 .objects
   padding-top: 120px
+  padding-left: 20px
+  padding-right: 20px
+  position: relative
   &__head 
     display: flex
     flex-direction: column
@@ -760,8 +770,10 @@ onBeforeUnmount(() => {
     text-align: center
     margin-bottom: 35px
 .map_wrapper
-  background: #F0F2F2
+  background: #DDE1E8
   height: 670px
+  border-radius: 16px
+  position: relative
 
   .container
     position: relative
@@ -1001,7 +1013,17 @@ onBeforeUnmount(() => {
   &.active
     background: #5F22C1
     color: #fff
-
+.info__box 
+  position: absolute
+  top: 14px
+  left: 14px
+  display: flex
+  flex-direction: column
+  gap: 10px
+  transition: .3s all
+  &.hide 
+    opacity: 0
+    visibility: hidden
 .info
   display: inline-flex
   padding: 8px 12px 8px 8px
@@ -1012,10 +1034,9 @@ onBeforeUnmount(() => {
   background: rgba(255, 255, 255, 0.9)
   backdrop-filter: blur(10px)
   height: max-content
-  position: absolute
-  top: 16px
-  left: 0
-  z-index: 3
+  &.hide 
+    display: none
+
 
 @media screen and (max-width: 1024px)
   .infoSelectedRegion
@@ -1027,4 +1048,6 @@ onBeforeUnmount(() => {
     &__head 
       gap: 16px
       margin-bottom: 36px
+  .map_wrapper, .map__content
+    height: 520px
 </style>

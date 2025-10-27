@@ -8,6 +8,13 @@ import 'swiper/css/navigation';
 
 import { EffectCoverflow, Navigation } from 'swiper/modules';
 
+const props = defineProps({
+  page: {
+    type: Object,
+    required: true
+  }
+})
+
 
 const swiperOptions = {
   effect: 'coverflow',
@@ -47,26 +54,7 @@ const swiperOptions = {
     },
   }
 }
-const vidos = [
-  {
-    text: 'Вместе с семьей',
-    img: './img/poster-1.jpg',
-    iframe: 'https://vkvideo.ru/video_ext.php?oid=-227034863&id=456252662&hd=2&',
-    time: '03:54'
-  },
-  {
-    text: 'Что мы узнали о счастье, путешествуя по России',
-    img: './img/poster-2.jpg',
-    iframe: 'https://rutube.ru/play/embed/21b0a06ad93f3b8407df0323eaa7185d/',
-    time: '06:21',
-  },
-  {
-    text: 'Вместе с семьей',
-    img: './img/poster-3.jpg',
-    iframe: 'https://rutube.ru/play/embed/21b0a06ad93f3b8407df0323eaa7185d/',
-    time: '06:21',
-  },
-]
+const vidos = computed(() => props.page.acf?.videos || [])
 
 const showModal = ref(false);
 const currentVideo = ref(null)
@@ -79,8 +67,8 @@ function openModal(link) {
 <template>
   <section class="vidos" id="vidos">
     <div class="vidos__head">
-      <h2>Видео от редакции</h2>
-      <p>Каждое видео — это искренние эмоции, неожиданные повороты и настоящая жизнь</p>
+      <h2>{{ props.page.acf?.['h-2'] }}</h2>
+      <p>{{ props.page.acf?.['desk-2'] }}</p>
     </div>
     <div class="vidos__box">
       <div class="arrows">
@@ -102,9 +90,9 @@ function openModal(link) {
       <swiper v-bind="swiperOptions"  class="vidos__swiper">
         <swiper-slide class="vidos__slider" v-for="video in vidos" :key="video.id">
           <div class="vidos__slider-img">
-            <img :src="video.img" alt="">
+            <img :src="video.poster" alt="">
           </div>
-          <div class="vidos__slider-play" @click="openModal(video.iframe)">
+          <div class="vidos__slider-play" @click="openModal(video.ssylka_na_video)">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path
                 d="M17.8395 7.79377C18.2398 8.00661 18.5746 8.32435 18.808 8.71293C19.0415 9.1015 19.1648 9.54628 19.1648 9.9996C19.1648 10.4529 19.0415 10.8977 18.808 11.2863C18.5746 11.6749 18.2398 11.9926 17.8395 12.2054L7.16286 18.0113C5.4437 18.9471 3.33203 17.7304 3.33203 15.8063V4.19377C3.33203 2.26877 5.4437 1.05294 7.16286 1.98711L17.8395 7.79377Z"
@@ -112,7 +100,7 @@ function openModal(link) {
             </svg>
           </div>
           <div class="vidos__slider-text">
-            <p>{{ video.text }}</p>
+            <p>{{ video.title }}</p>
             <div class="time">{{ video.time }}</div>
           </div>
         </swiper-slide>

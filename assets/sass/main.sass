@@ -52,7 +52,7 @@ a
     text-decoration: none
 
 ul li
-  list-style: none
+    list-style: none
 
 img
   vertical-align: top
@@ -70,11 +70,11 @@ h2
   font-size: 56px
   line-height: 110%
   font-weight: 600
-h3 
+h3
   font-size: 36px
   font-weight: 600
   line-height: 110%
-p 
+p
   color: #585858
   font-size: 18px
   line-height: 130%
@@ -121,27 +121,36 @@ body
   max-height: 40px
   opacity: 1
   transform: translateY(0)
-  
+.fade-enter-active, .fade-leave-active
+  transition: opacity 0.4s ease, transform 0.4s ease
+
+.fade-enter-from, .fade-leave-to
+  opacity: 0
+  transform: translateY(10px)
+
+.fade-enter-to, .fade-leave-from
+  opacity: 1
+  transform: translateY(0)
 @media (max-width: 1400px)
-  h1 
+  h1
     font-size: 80px
-  h2 
+  h2
     font-size: 46px
-  h3 
+  h3
     font-size: 30px
 @media (max-width: 1200px)
-  h1 
+  h1
     font-size: 70px
-  h2 
+  h2
     font-size: 36px
-  h3 
+  h3
     font-size: 28px
 @media (max-width: 767px)
-  h1 
+  h1
     font-size: 48px
-  h2 
+  h2
     font-size: 32px
-  h3 
+  h3
     font-size: 24px
-  p 
+  p
     font-size: 14px

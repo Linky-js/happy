@@ -3,6 +3,13 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import MenuBlock from './MenuBlock.vue';
 const { $gsap } = useNuxtApp()
 
+const props = defineProps({
+  page: {
+    type: Object,
+    required: true
+  }
+})
+
 const img1 = ref('./img/main-1.jpg');
 const img2 = ref('./img/main-2.png');
 const img3 = ref('./img/main-3.png');
@@ -82,12 +89,11 @@ onBeforeUnmount(() => {
     </div>
     <div class="main__text">
       <div class="main__top">
-        <h1>Счастливые люди России </h1>
-        <p>Настоящие истории радости и исполнения мечт со всей страны</p>
+        <h1>{{ props.page.acf?.['h-1'] }}</h1>
+        <p>{{ props.page.acf?.['desk-1'] }}</p>
       </div>
       <div class="main__bot">
-        <p>Мы отправились в путешествие по всей России, чтобы запечатлеть моменты искреннего счастья — от романтических
-          предложений до невероятных чудес, ставших реальностью. </p>
+        <p>{{ props.page.acf?.['desk-down-1'] }}</p>
         <div class="main__btns">
           <button type="button" @click="scrollToMap"  class="btn-main">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

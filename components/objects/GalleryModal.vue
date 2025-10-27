@@ -24,7 +24,6 @@ onMounted(() => {
 
 <template>
 	<div class="modal" @click.self="emit('close')">
-
 		<div class="modalContent">
 			<div class="close" @click="emit('close')">
 				<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -74,8 +73,6 @@ onMounted(() => {
 					<img :src="apiDomain + 'web/uploads/' + image.img" alt="" />
 				</SwiperSlide>
 			</Swiper>
-
-			<!-- Маленький свайпер -->
 
 		</div>
 	</div>
