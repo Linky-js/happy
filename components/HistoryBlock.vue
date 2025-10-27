@@ -6,6 +6,13 @@ import ModalVideo from './ModalVideo.vue';
 
 gsap.registerPlugin(ScrollToPlugin);
 
+const props = defineProps({
+  page: {
+    type: Object,
+    required: true
+  }
+})
+
 const isMobile = ref(false)
 
 function checkMobile() {
@@ -163,7 +170,6 @@ const memoryU = ref('./img/history/memory-u.png')
 const isActiveMemory = ref(false)
 
 const activeDropdown = ref(null)
-const selectedTheme = ref(themes[0])
 const selectedSort = ref(sorts[0])
 
 const selectedRegions = ref([])
@@ -184,7 +190,6 @@ const visiblePosts = computed(() => {
 
 const showModal = ref(false);
 const currentVideo = ref(null)
-const showDop = computed(() => selectedTheme.value !== 'Все темы')
 
 
 function toggleActiveMemory() {
@@ -266,9 +271,8 @@ onBeforeUnmount(() => {
   <section class="history" id="history">
     <div class="container">
       <div class="history__head">
-        <h2>Истории, которые <span>вдохновляют</span></h2>
-        <p>Вы можете посмотреть все наши видео в одном месте. <br>Каждое видео — это искренние эмоции, неожиданные
-          повороты и настоящая жизнь</p>
+        <h2 v-html="props.page.acf?.['h-4']"></h2>
+        <p v-html="props.page.acf?.['desk-4']"></p>
       </div>
       <div class="filter">
         <p>Используйте фильтры, чтобы найти истории по теме или региону</p>
@@ -281,17 +285,6 @@ onBeforeUnmount(() => {
               <div v-for="region in regions" :key="region" class="filter__item-key checkbox"
                 :class="{ active: selectedRegions.includes(region) }" @click="toggleRegion(region)">
                 {{ region }}
-              </div>
-            </div>
-          </div>
-          <div class="filter__item filter__themes" :class="{ active: activeDropdown === 'themes' }">
-            <div class="filter__item-head" @click="toggleDropdown('themes')">
-              {{ selectedTheme }}
-            </div>
-            <div class="filter__item-list">
-              <div v-for="theme in themes" :key="theme" class="filter__item-key radio"
-                :class="{ active: selectedTheme === theme }" @click="selectTheme(theme)">
-                {{ theme }}
               </div>
             </div>
           </div>
@@ -308,13 +301,26 @@ onBeforeUnmount(() => {
           </div>
         </div>
       </div>
-      <Transition name="expand">
-        <div class="dop" v-if="showDop">
-          <p class="dop__memory" :class="{ active: isActiveMemory }" @click="toggleActiveMemory">Воспоминания</p>
-          <p class="dop__activities">Активности</p>
-        </div>
-      </Transition>
+      <div class="dop">
+        <p class="dop__memory" :class="{ active: isActiveMemory }" @click="toggleActiveMemory">Воспоминания</p>
+        <p class="dop__activities">Активности</p>
+      </div>
       <div class="posts">
+        <Transition name="fade">
+          <div class="memory" v-if="isActiveMemory" :class="{ active: isActiveMemory }">
+            <div class="memory__imgs">
+              <img class="memory__imgs-img img1" :src="memoryImg1" alt="">
+              <img class="memory__imgs-img img2" :src="memoryImg2" alt="">
+              <div class="memory__imgs-icon">
+                <img class="imgIcon" :src="memoryIcon" alt=""></img>
+              </div>
+              <img class="memory__imgs-img img3" :src="memoryImg3" alt="">
+              <img class="memory__imgs-img img4" :src="memoryImg4" alt="">
+            </div>
+            <img class="memory__u" :src="memoryU" alt="">
+            <button class="memory__btn" @click="scrollToContacts">Заказать воспоминания</button>
+          </div>
+        </Transition>
         <div v-for="(post, i) in visiblePosts" :key="i" class="post">
           <div class="post__top" :style="{ backgroundImage: `url(${post.img})` }">
             <div class="post__region">
@@ -333,19 +339,7 @@ onBeforeUnmount(() => {
             <p v-for="theme in post.themes" :key="theme">{{ theme }}</p>
           </div>
         </div>
-        <div class="memory" :class="{ active: isActiveMemory }">
-          <div class="memory__imgs">
-            <img class="memory__imgs-img img1" :src="memoryImg1" alt="">
-            <img class="memory__imgs-img img2" :src="memoryImg2" alt="">
-            <div class="memory__imgs-icon">
-              <img class="imgIcon" :src="memoryIcon" alt=""></img>
-            </div>
-            <img class="memory__imgs-img img3" :src="memoryImg3" alt="">
-            <img class="memory__imgs-img img4" :src="memoryImg4" alt="">
-          </div>
-          <img class="memory__u" :src="memoryU" alt="">
-          <button class="memory__btn" @click="scrollToContacts">Заказать воспоминания</button>
-        </div>
+
       </div>
       <button class="btn-load" :class="{ ta: showAll }" v-if="posts.length > 6" @click="showMore">
         {{ showAll ? 'Скрыть' : 'Показать ещё' }}
@@ -357,11 +351,6 @@ onBeforeUnmount(() => {
 </template>
 <style lang="sass" scoped>
 .memory 
-  position: absolute
-  top: 0
-  left: 0
-  z-index: 2
-  max-width: calc(428px * 100% / 1324px)
   height: 252px
   width: 100%
   overflow: hidden
@@ -370,6 +359,7 @@ onBeforeUnmount(() => {
   opacity: 0
   visibility: hidden
   transition: .3s all
+  position: relative
   &.active 
     opacity: 1
     visibility: visible
@@ -428,7 +418,6 @@ onBeforeUnmount(() => {
       background: transparent
 
 .dop 
-  margin-top: -24px
   margin-bottom: 24px
   display: flex
   align-items: center
@@ -487,7 +476,7 @@ onBeforeUnmount(() => {
     margin-bottom: 48px
     text-align: center
     h2 
-      span 
+      :deep(span)
         color: #6E8009
         padding: 6px 20px 10px
         background: #E1E8B1
@@ -502,7 +491,7 @@ onBeforeUnmount(() => {
   gap: 15px
   padding: 12px
   padding-left: 18px
-  margin-bottom: 36px
+  margin-bottom: 12px
   &__right 
     display: flex
     gap: 12px
@@ -693,31 +682,25 @@ onBeforeUnmount(() => {
       line-height: 135%
       font-weight: 500
 @media (max-width: 1200px)
-  .memory
-    max-width: calc(50% - 10px)
   .filter
     p 
       display: none
     &__right 
       max-width: 100%
       width: 100%
-      display: grid
-      grid-template-columns: repeat(2, 1fr)
+      display: flex
+      flex-direction: column
       gap: 12px
     &__item 
       width: 100%
-      &.filter__regions
-        grid-column: 1 / 3
       &.filter__themes, &.filter__sorts  
         width: 100%
   .posts 
     grid-template-columns: repeat(2, 1fr)
 @media (max-width: 767px)
   .dop 
-    margin-top: 0
+    margin-bottom: 24px
   .memory
-    max-width: calc(100% - 28px)
-    left: 14px
     height: 197px
     &__imgs 
       margin-top: -30px
@@ -730,13 +713,12 @@ onBeforeUnmount(() => {
       margin-bottom: 36px
       padding-left: 14px
       padding-right: 14px
-      span 
+      :deep(span)
         display: inline-block
         width: max-content
         margin: 0 auto
   .filter 
     padding: 14px
-    margin-bottom: 20px
      
   .posts 
     padding-left: 14px
