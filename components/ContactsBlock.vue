@@ -1,6 +1,58 @@
 <script setup>
+import { ref } from 'vue'
 
+const name = ref('')
+const email = ref('')
+const region = ref('')
+const topic = ref('')
+const policy = ref(false)
+const message = ref('')
+const loading = ref(false)
+const success = ref(false)
+const error = ref(null)
+
+const submitForm = async () => {
+  error.value = null
+  success.value = false
+  if (!policy.value) {
+    error.value = 'Поставьте галочку на согласие обработки данных.'
+    return
+  }
+
+  loading.value = true
+  try {
+    const formData = new FormData()
+    formData.append('_wpcf7', '204') // ID формы из админки CF7
+    formData.append('_wpcf7_unit_tag', 'form_123')
+    formData.append('_wpcf7_version', '6.1.3')
+    formData.append('_wpcf7_locale', 'ru_RU')  // локаль сайта
+    formData.append('your-name', name.value)
+    formData.append('your-email', email.value)
+    formData.append('your-region', region.value)
+    formData.append('your-topic', topic.value)
+    const res = await $fetch('https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/contact-form-7/v1/contact-forms/204/feedback', {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (res.status === 'mail_sent') {
+      success.value = true
+      name.value = ''
+      email.value = ''
+      region.value = ''
+      topic.value = ''
+      policy.value = false
+    } else {
+      error.value = res.message || 'Ошибка отправки'
+    }
+  } catch (err) {
+    error.value = 'Ошибка при соединении с сервером'
+  } finally {
+    loading.value = false
+  }
+}
 </script>
+
 <template>
   <section class="contacts" id="contacts">
     <div class="contacts__bg">
@@ -11,23 +63,33 @@
             <p>У вас есть история, которую стоит рассказать? <br>Напишите нам — возможно, именно вы станете героем
               следующего выпуска.</p>
           </div>
-          <form class="form">
-            <input type="text" placeholder="Имя" class="input">
-            <input type="email" placeholder="E-mail" class="input">
-            <input type="text" placeholder="Регион" class="input">
-            <input type="text" placeholder="Тема/краткое описание" class="input">
+
+          <form class="form" @submit.prevent="submitForm">
+            <input v-model="name" type="text" placeholder="Имя" class="input" required>
+            <input v-model="email" type="email" placeholder="E-mail" class="input" required>
+            <input v-model="region" type="text" placeholder="Регион" class="input">
+            <input v-model="topic" type="text" placeholder="Тема/краткое описание" class="input">
+
             <div class="check">
-              <input type="checkbox" name="policy" id="check-policy">
-              <label for="check-policy">Даю согласие на обработку <NuxtLink to="/">персональных данных</NuxtLink>
+              <input type="checkbox" id="check-policy" v-model="policy">
+              <label for="check-policy">
+                Даю согласие на обработку <NuxtLink to="/">персональных данных</NuxtLink>
               </label>
             </div>
-            <button type="submit" class="btn">Отправить</button>
+
+            <button type="submit" class="btn" :disabled="loading">
+              {{ loading ? 'Отправка...' : 'Отправить' }}
+            </button>
+
+            <p v-if="success" class="success">✅ Заявка успешно отправлена!</p>
+            <p v-if="error" class="error">❌ {{ error }}</p>
           </form>
         </div>
       </div>
     </div>
   </section>
 </template>
+
 <style lang="sass" scoped>
 .contacts 
   padding: 0 20px

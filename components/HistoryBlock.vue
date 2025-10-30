@@ -10,10 +10,28 @@ const props = defineProps({
   page: {
     type: Object,
     required: true
-  }
+  },
 })
 
+const videos = useState('videos')       // ожидается, что где-то вы заполнили videos.value = [...]
+const regions = useState('regions')     // список регионов (объекты как в примере)
 const isMobile = ref(false)
+
+videos.value = videos.value.map(video => {
+  const regionObjects = video.acf?.code_region || []
+
+  const matchedCodes = regionObjects
+    .map(vReg => {
+      const match = regions.value.find(r => r.id === vReg.ID)
+      return match?.acf?.code_region
+    })
+    .filter(Boolean)
+
+  return {
+    ...video,
+    regionCodes: matchedCodes
+  }
+})
 
 function checkMobile() {
   if (process.client) {
@@ -21,145 +39,22 @@ function checkMobile() {
   }
 }
 
-const regions = [
-  'Все регионы',
-  'Московская область',
-  'Санкт-Петербург',
-  'Краснодарский край',
-  'Красноярский край',
-  'Свердловская область',
-  'Волгоградская область',
-]
-const themes = [
-  'Все темы',
-  'Семья',
-  'Музыка',
-  'Кино',
-  'Спорт',
-  'Путешествия',
-  'Природа',
-  'Культура',
-]
+// UI / фильтры
 const sorts = [
   'По дате',
   'По длительности',
   'По рейтингу',
 ]
 
-const posts = [
-  {
-    text: '«Предложение на высоте» — воздушный шар над Переславлем',
-    img: './img/history/poster-1.jpg',
-    iframe: 'https://vkvideo.ru/video_ext.php?oid=-227034863&id=456252662&hd=2&',
-    region: 'Московская область',
-  },
-  {
-    text: '«Предложение на высоте» — воздушный шар над Переславлем',
-    img: './img/history/poster-2.jpg',
-    iframe: 'https://vkvideo.ru/video_ext.php?oid=-227034863&id=456252662&hd=2&',
-    region: 'Ярославская область',
-    themes: [
-      'Семья',
-      'Мечта',
-    ],
-  },
-  {
-    text: '«Праздник в каждом дворе» — добрые соседи в Анапе',
-    img: './img/history/poster-3.jpg',
-    iframe: 'https://vkvideo.ru/video_ext.php?oid=-227034863&id=456252662&hd=2&',
-    region: 'Краснодарский край',
-    themes: [
-      'Дружба',
-      'Воспоминания',
-    ],
-  },
-  {
-    text: '«Две страуса и мечта» — как мужчина стал фермером в Таганроге',
-    img: './img/history/poster-4.jpg',
-    iframe: 'https://vkvideo.ru/video_ext.php?oid=-227034863&id=456252662&hd=2&',
-    region: 'Ростовская область',
-    themes: [
-      'Исполненные мечты',
-      'Животные',
-    ],
-  },
-  {
-    text: '«Предложение на высоте» — воздушный шар над Липецком',
-    img: './img/history/poster-5.jpg',
-    iframe: 'https://vkvideo.ru/video_ext.php?oid=-227034863&id=456252662&hd=2&',
-    region: 'Липецкая область',
-    themes: [
-      'Исполненные мечты',
-      'Предложение',
-    ],
-  },
-  {
-    text: '«Музыка сердца» — как мальчик из глубинки получил рояль',
-    img: './img/history/poster-6.jpg',
-    iframe: 'https://vkvideo.ru/video_ext.php?oid=-227034863&id=456252662&hd=2&',
-    region: 'Удмуртская область',
-    themes: [
-      'Исполненные мечты',
-      'Счастье',
-    ],
-  },
-  {
-    text: '«Предложение на высоте» — воздушный шар над Переславлем',
-    img: './img/history/poster-1.jpg',
-    iframe: 'https://vkvideo.ru/video_ext.php?oid=-227034863&id=456252662&hd=2&',
-    region: 'Московская область',
-  },
-  {
-    text: '«Предложение на высоте» — воздушный шар над Переславлем',
-    img: './img/history/poster-2.jpg',
-    iframe: 'https://vkvideo.ru/video_ext.php?oid=-227034863&id=456252662&hd=2&',
-    region: 'Ярославская область',
-    themes: [
-      'Семья',
-      'Мечта',
-    ],
-  },
-  {
-    text: '«Праздник в каждом дворе» — добрые соседи в Анапе',
-    img: './img/history/poster-3.jpg',
-    iframe: 'https://vkvideo.ru/video_ext.php?oid=-227034863&id=456252662&hd=2&',
-    region: 'Краснодарский край',
-    themes: [
-      'Дружба',
-      'Воспоминания',
-    ],
-  },
-  {
-    text: '«Две страуса и мечта» — как мужчина стал фермером в Таганроге',
-    img: './img/history/poster-4.jpg',
-    iframe: 'https://vkvideo.ru/video_ext.php?oid=-227034863&id=456252662&hd=2&',
-    region: 'Ростовская область',
-    themes: [
-      'Исполненные мечты',
-      'Животные',
-    ],
-  },
-  {
-    text: '«Предложение на высоте» — воздушный шар над Липецком',
-    img: './img/history/poster-5.jpg',
-    iframe: 'https://vkvideo.ru/video_ext.php?oid=-227034863&id=456252662&hd=2&',
-    region: 'Липецкая область',
-    themes: [
-      'Исполненные мечты',
-      'Предложение',
-    ],
-  },
-  {
-    text: '«Музыка сердца» — как мальчик из глубинки получил рояль',
-    img: './img/history/poster-6.jpg',
-    iframe: 'https://vkvideo.ru/video_ext.php?oid=-227034863&id=456252662&hd=2&',
-    region: 'Удмуртская область',
-    themes: [
-      'Исполненные мечты',
-      'Счастье',
-    ],
-  },
-]
+const activeDropdown = ref(null)
+const selectedSort = ref(sorts[0])
+
+// selectedRegions хранит выбранные объекты региона или строку 'Все регионы'
+const selectedRegions = ref([])
+const selectedRegionsNames = ref([])
+
+const postsCount = ref(6)
+const showAll = ref(false)
 
 const memoryImg1 = ref('./img/history/memory-1.jpg')
 const memoryImg2 = ref('./img/history/memory-2.jpg')
@@ -169,41 +64,162 @@ const memoryImg4 = ref('./img/history/memory-4.jpg')
 const memoryU = ref('./img/history/memory-u.png')
 const isActiveMemory = ref(false)
 
-const activeDropdown = ref(null)
-const selectedSort = ref(sorts[0])
-
-const selectedRegions = ref([])
-
-const postsCount = ref(6)
-const showAll = ref(false)
-const hiddenCount = computed(() => {
-  const visible = isMobile.value ? 3 : postsCount.value
-  return posts.length - visible
-})
-
-const visiblePosts = computed(() => {
-  if (isMobile.value && !showAll.value) {
-    return posts.slice(0, 3)
-  }
-  return posts.slice(0, postsCount.value)
-})
-
 const showModal = ref(false);
 const currentVideo = ref(null)
 
+// Вспомогательные функции
 
-function toggleActiveMemory() {
-  isActiveMemory.value = !isActiveMemory.value
+function toggleActiveMemory(memory) {
+  if (memory === isActiveMemory.value) {
+    isActiveMemory.value = false
+    return
+  }
+  isActiveMemory.value = memory
+  
 }
 
 function openModal(link) {
+  
   currentVideo.value = link
   showModal.value = true
 }
 
+function toggleDropdown(name) {
+  activeDropdown.value = activeDropdown.value === name ? null : name
+}
+
+function toggleRegion(region) {
+  // region — объект региона из regions (или строка 'Все регионы')
+  if (region === 'Все регионы') {
+    selectedRegions.value = ['Все регионы']
+    selectedRegionsNames.value = ['Все регионы']
+    return
+  }
+
+  // если уже есть 'Все регионы' — снимаем
+  selectedRegions.value = selectedRegions.value.filter(r => r !== 'Все регионы')
+  selectedRegionsNames.value = selectedRegionsNames.value.filter(n => n !== 'Все регионы')
+
+  const idx = selectedRegions.value.indexOf(region)
+  if (idx !== -1) {
+    selectedRegions.value.splice(idx, 1)
+    selectedRegionsNames.value.splice(idx, 1)
+  } else {
+    selectedRegions.value.push(region)
+    selectedRegionsNames.value.push(region?.title?.rendered || '')
+  }
+}
+
+function selectSort(sort) {
+  selectedSort.value = sort
+  activeDropdown.value = null
+}
+
+// Сортировка и фильтрация
+
+function _regionCodesFromSelection() {
+  // Возвращаем массив кодов регионов, выбранных в фильтре
+  // region.acf.code_region может быть строкой или массив
+  if (!selectedRegions.value.length) return []
+  if (selectedRegions.value.includes('Все регионы')) return []
+
+
+  const codes = []
+  for (const r of selectedRegions.value) {
+    if (!r) continue
+    const cr = r.acf?.code_region
+    if (!cr) continue
+    if (Array.isArray(cr)) codes.push(...cr)
+    else codes.push(cr)
+  }
+
+  return Array.from(new Set(codes))
+}
+
+function _videoHasRegion(video, selectedCodes) {
+  // video.acf.code_region — массив, проверим пересечение
+  if (!video || !video.acf) return false
+  const vCodes = video.regionCodes
+  if (!vCodes) return false
+  if (Array.isArray(vCodes)) {
+    return vCodes.some(vc => selectedCodes.includes(vc))
+  } else {
+    return selectedCodes.includes(vCodes)
+  }
+}
+
+const processedVideos = computed(() => {
+  const list = Array.isArray(videos.value) ? videos.value.slice() : []
+
+
+  // --- фильтр по регионам
+  const selectedCodes = _regionCodesFromSelection()
+  let filtered = list
+  if (selectedCodes.length) {
+    filtered = filtered.filter(v => _videoHasRegion(v, selectedCodes))
+  }
+
+  // --- фильтр по Категориям
+  const currentCategory = isActiveMemory.value
+  if (currentCategory) {
+    filtered = filtered.filter(v => v._embedded?.['wp:term']?.[0]?.[0].name === currentCategory)
+    console.log(filtered);
+    
+  }
+
+  // --- сортировка
+  const sort = selectedSort.value
+  filtered.sort((a, b) => {
+    if (sort === 'По дате') {
+      // new -> first
+      return new Date(b.date) - new Date(a.date)
+    }
+    if (sort === 'По длительности') {
+      // ожидаем наличие a.acf.duration или похожего поля (fallback 0)
+      const getDur = x => {
+        const d = x.acf?.duration ?? x.acf?.time ?? x.acf?.length ?? 0
+        const n = parseFloat(d)
+        return Number.isFinite(n) ? n : 0
+      }
+      return getDur(b) - getDur(a)
+    }
+    if (sort === 'По рейтингу') {
+      // поле у вас называется "raiting" — используем parseFloat
+      const getRate = x => {
+        const r = x.acf?.raiting ?? x.acf?.rating ?? 0
+        const n = parseFloat(r)
+        return Number.isFinite(n) ? n : 0
+      }
+      return getRate(b) - getRate(a)
+    }
+
+    // default: по дате
+    return new Date(b.date) - new Date(a.date)
+  })
+
+  return filtered
+})
+
+// видимые посты
+const visiblePosts = computed(() => {
+  const list = processedVideos.value || []
+  const visible = isMobile.value ? 3 : postsCount.value
+  if (!showAll.value) {
+    return list.slice(0, visible)
+  }
+  return list.slice(0, list.length)
+})
+
+const hiddenCount = computed(() => {
+  const listLen = processedVideos.value?.length ?? 0
+  const visible = isMobile.value ? 3 : postsCount.value
+  return Math.max(0, listLen - (showAll.value ? listLen : visible))
+})
+
+// показать ещё — работает с processedVideos
 function showMore() {
   if (!showAll.value) {
-    postsCount.value = posts.length
+    postsCount.value = processedVideos.value.length || postsCount.value
     showAll.value = true
   } else {
     postsCount.value = 6
@@ -211,36 +227,7 @@ function showMore() {
   }
 }
 
-// открыть/закрыть dropdown
-function toggleDropdown(name) {
-  activeDropdown.value = activeDropdown.value === name ? null : name
-}
-
-// выбор региона (чекбокс)
-function toggleRegion(region) {
-  if (region === 'Все регионы') {
-    selectedRegions.value = ['Все регионы']
-  } else {
-    if (selectedRegions.value.includes(region)) {
-      selectedRegions.value = selectedRegions.value.filter(r => r !== region)
-    } else {
-      selectedRegions.value.push(region)
-      selectedRegions.value = selectedRegions.value.filter(r => r !== 'Все регионы')
-    }
-  }
-}
-
-// выбор radio
-function selectTheme(theme) {
-  selectedTheme.value = theme
-  activeDropdown.value = null
-}
-function selectSort(sort) {
-  selectedSort.value = sort
-  activeDropdown.value = null
-}
-
-// закрытие по клику вне
+// клик вне
 function handleClickOutside(e) {
   const filter = document.querySelector('.filter')
   if (filter && !filter.contains(e.target)) {
@@ -255,18 +242,27 @@ function scrollToContacts() {
     ease: "power2.inOut",
   });
 }
+function postTags(post) {
+  
+  let tags = post?._embedded?.['wp:term']
+    ?.flat()
+    ?.filter(t => t.taxonomy === 'video_tag') || []
+    
+  return tags
+}
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
   checkMobile()
   window.addEventListener('resize', checkMobile)
 })
+
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside)
   window.removeEventListener('resize', checkMobile)
 })
-
 </script>
+
 <template>
   <section class="history" id="history">
     <div class="container">
@@ -275,16 +271,16 @@ onBeforeUnmount(() => {
         <p v-html="props.page.acf?.['desk-4']"></p>
       </div>
       <div class="filter">
-        <p>Используйте фильтры, чтобы найти истории по теме или региону</p>
+        <p>Используйте фильтры, чтобы найти истории по региону</p>
         <div class="filter__right">
           <div class="filter__item filter__regions" :class="{ active: activeDropdown === 'regions' }">
             <div class="filter__item-head" @click="toggleDropdown('regions')">
-              {{ selectedRegions.length ? selectedRegions.join(', ') : 'Все регионы' }}
+              {{ selectedRegionsNames.length ? selectedRegionsNames.join(', ') : 'Все регионы' }}
             </div>
             <div class="filter__item-list">
               <div v-for="region in regions" :key="region" class="filter__item-key checkbox"
                 :class="{ active: selectedRegions.includes(region) }" @click="toggleRegion(region)">
-                {{ region }}
+                {{ region?.title?.rendered }}
               </div>
             </div>
           </div>
@@ -302,17 +298,17 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <div class="dop">
-        <p class="dop__memory" :class="{ active: isActiveMemory }" @click="toggleActiveMemory">Воспоминания</p>
-        <p class="dop__activities">Активности</p>
+        <p class="dop__memory" :class="{ active: isActiveMemory === 'Воспоминания' }" @click="toggleActiveMemory('Воспоминания')">Воспоминания</p>
+        <p class="dop__activities" :class="{ active: isActiveMemory === 'Активности' }" @click="toggleActiveMemory('Активности')">Активности</p>
       </div>
       <div class="posts">
-        <Transition name="fade">
-          <div class="memory" v-if="isActiveMemory" :class="{ active: isActiveMemory }">
+        <transition name="fade">
+          <div class="memory" v-if="isActiveMemory === 'Воспоминания'" :class="{ active: isActiveMemory === 'Воспоминания' }">
             <div class="memory__imgs">
               <img class="memory__imgs-img img1" :src="memoryImg1" alt="">
               <img class="memory__imgs-img img2" :src="memoryImg2" alt="">
               <div class="memory__imgs-icon">
-                <img class="imgIcon" :src="memoryIcon" alt=""></img>
+                <img class="imgIcon" :src="memoryIcon" alt="" />
               </div>
               <img class="memory__imgs-img img3" :src="memoryImg3" alt="">
               <img class="memory__imgs-img img4" :src="memoryImg4" alt="">
@@ -320,28 +316,29 @@ onBeforeUnmount(() => {
             <img class="memory__u" :src="memoryU" alt="">
             <button class="memory__btn" @click="scrollToContacts">Заказать воспоминания</button>
           </div>
-        </Transition>
+        </transition>
         <div v-for="(post, i) in visiblePosts" :key="i" class="post">
-          <div class="post__top" :style="{ backgroundImage: `url(${post.img})` }">
-            <div class="post__region">
-              {{ post.region }}
+          <div class="post__top"
+            :style="{ backgroundImage: `url(${post._embedded?.['wp:featuredmedia']?.[0]?.source_url})` }">
+            <div v-for="reg in post?.acf?.code_region" :key="reg.id" class="post__region">
+              {{ reg.post_title }}
             </div>
-            <div class="post__play" @click="openModal(post.iframe)">
+            <div class="post__play" @click="openModal(post?.acf?.link)">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M17.8405 7.79377C18.2408 8.00661 18.5755 8.32435 18.809 8.71293C19.0425 9.1015 19.1658 9.54628 19.1658 9.9996C19.1658 10.4529 19.0425 10.8977 18.809 11.2863C18.5755 11.6749 18.2408 11.9926 17.8405 12.2054L7.16384 18.0113C5.44467 18.9471 3.33301 17.7304 3.33301 15.8063V4.19377C3.33301 2.26877 5.44467 1.05294 7.16384 1.98711L17.8405 7.79377Z"
                   fill="white" />
               </svg>
             </div>
-            <p>{{ post.text }}</p>
+            <p>{{ post.title.rendered }}</p>
           </div>
-          <div class="post__bot" v-if="post.themes">
-            <p v-for="theme in post.themes" :key="theme">{{ theme }}</p>
+          <div class="post__bot">
+            <p v-for="tag in postTags(post)" :key="tag">{{ tag.name }}</p>
           </div>
         </div>
 
       </div>
-      <button class="btn-load" :class="{ ta: showAll }" v-if="posts.length > 6" @click="showMore">
+      <button class="btn-load" :class="{ ta: showAll }" v-if="videos.length > 6" @click="showMore">
         {{ showAll ? 'Скрыть' : 'Показать ещё' }}
         <span v-if="!showAll">{{ hiddenCount }}</span>
       </button>

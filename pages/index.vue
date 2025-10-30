@@ -11,12 +11,17 @@ import FooterBlock from '~/components/FooterBlock.vue';
 const { data: page } = await useAsyncData('homepage', () =>
   $fetch(`https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/pages/9?acf_fields=true`)
 );
-const { data: videos } = await useAsyncData('videos', () =>
-  $fetch('https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/video?per_page=100')
+const videos = useState('videos', () => [])
+const { data: videosRef } = await useAsyncData('videos', () =>
+  $fetch('https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/video?per_page=100&_embed=true&acf_fields=true')
 );
 
+if (videosRef.value) {
+  videos.value = videosRef.value
+}
+
 onMounted(() => {
-  console.log('page', page);
+  console.log('videos', videos);
   
 })
 </script>
@@ -24,7 +29,7 @@ onMounted(() => {
   <MainBlock :page="page"/>
   <Videosblock :page="page"/>
   <ObjectsBlock :page="page" />
-  <HistoryBlock :videos="videos" :page="page" />
+  <HistoryBlock v-if="videos && videos.length > 0" :page="page" />
   <NewsBlock :title="'Статьи и размышления о счастье'" :text="'Где живёт счастье? Как его найти и сохранить? Здесь мы делимся личными историями, очерками, наблюдениями и рассуждениями о том, что делает людей по-настоящему счастливыми в России.'"/>
   <AboutBlock :page="page"/>
   <ContactsBlock :page="page"/>

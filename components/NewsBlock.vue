@@ -1,4 +1,5 @@
 <script setup>
+import { onMounted } from 'vue';
 import NewsPost from './NewsPost.vue';
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Navigation } from 'swiper/modules';
@@ -8,48 +9,24 @@ import 'swiper/css/navigation';
 
 const modules = [Navigation];
 const props = defineProps({
-  title: { type: String, required: true },
+  dontslug: { type: String, required: false },
+  title: { type: String, required: false },
   text: { type: String, required: false },
 })
-const posts = [
-  {
-    img: '/img/news-1.jpg',
-    title: 'Что мы узнали о счастье, путешествуя по России',
-    text: 'Команда проекта делится впечатлениями о людях, которые умеют быть счастливыми — несмотря ни на что.',
-    tag: 'Философия',
-    time: '~12 мин.',
-    author: 'Редакция проекта',
-    date: '15 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: '/img/news-2.jpg',
-    title: 'Счастье — это не география. Это отношения',
-    text: 'Психолог Наталья Воронина рассуждает о том, как поддержка и любовь близких делают нас счастливыми, где бы мы ни были.',
-    tag: 'Психология',
-    time: '~5 мин.',
-    author: 'Наталья Воронина',
-    date: '3 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: '/img/news-3.jpg',
-    title: 'Когда мечта сбывается: 5 вдохновляющих историй',
-    text: 'Короткие, но поразительные истории людей, чьи мечты стали реальностью благодаря настойчивости, вере и помощи окружающих.',
-    tag: 'Вдохновение',
-    time: '~8 мин.',
-    author: 'Анастасия Громова',
-    date: '1 июля 2025',
-    link: '/news/slug',
-  },
-]
+const { data: otherPosts } = await useAsyncData(`other-${props.dontslug}`, () =>
+  $fetch(`https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/posts?per_page=5&exclude=${props.dontslug}&_embed`)
+)
+const posts = computed(() => otherPosts.value || [])
+onMounted(() => {
+  console.log('otherPosts', posts.value)
+})
 </script>
 <template>
-  <section class="news" id="news">
+  <section v-if="posts?.length > 0" class="news" id="news">
     <div class="container">
       <div class="news__head">
-        <h2>{{ props.title }}</h2>
-        <p v-if="props.text">{{ props.text }}</p>
+        <h2>{{ props?.title }}</h2>
+        <p v-if="props?.text">{{ props?.text }}</p>
       </div>
       <swiper :slides-per-view="'auto'" :space-between="20" :modules="modules" :navigation="{
         prevEl: '.arrow-prev',

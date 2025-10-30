@@ -42,6 +42,8 @@ function formatPost(post) {
   }
 }
 onMounted(() => {
+  console.log('props.', props.openObject);
+  
   checkMobile();
   window.addEventListener('resize', checkMobile);
 })
@@ -113,9 +115,8 @@ onBeforeUnmount(() => {
           <swiper class="modal__swiper" :slides-per-view="'auto'" :space-between="20" :modules="[Navigation]"
             :navigation="{
               prevEl: '.arrow-video-prev',
-              nextEl: '.arrow-video-next'
-            }">
-            <swiper-slide v-for="(video, i) in props.openObject.videos" :key="video.id" class="modal__item">
+              nextEl: '.arrow-video-next'}">
+            <swiper-slide v-for="video in props.openObject.videos" :key="video.id" class="modal__item">
               <img :src="video._embedded?.['wp:featuredmedia']?.[0]?.source_url || '/img/placeholder.jpg'"
                 :alt="video.title.rendered" />
               <div class="modal__item-play" @click="emit('play', video)">
@@ -151,8 +152,8 @@ onBeforeUnmount(() => {
           </div>
           <swiper class="modal__swiper" :slides-per-view="'auto'" :space-between="20" :modules="[Navigation]"
             :navigation="{ prevEl: '.arrow-news-prev', nextEl: '.arrow-news-next' }">
-            <swiper-slide v-for="(post, i) in props.openObject.posts" :key="post.id" class="modal__news">
-              <NewsPost :post="formatPost(post)" />
+            <swiper-slide v-for="post in props.openObject.posts" :key="post.id" class="modal__news">
+              <NewsPost :post="post" />
             </swiper-slide>
           </swiper>
         </div>

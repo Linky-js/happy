@@ -4,18 +4,11 @@ import gsap from "gsap";
 import ObjectModal from "./objects/ObjectModal.vue";
 import ModalVideo from "./ModalVideo.vue";
 
+const regions = useState('regions', () => [])
 const { data: regionsRef } = await useAsyncData('regions', () =>
   $fetch('https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/region?per_page=100')
 );
 
-const videosRef = ref([]);
-onMounted(async () => {
-  videosRef.value = await $fetch(
-    'https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/video?per_page=100&_embed'
-  );
-  console.log("VIDEOS", videosRef.value.map(v => v.acf?.code_region));
-  recalcMarkers();
-});
 const { data: postsRef } = await useAsyncData('posts', () =>
   $fetch('https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/posts?per_page=100&_embed')
 )
@@ -28,14 +21,17 @@ const props = defineProps({
     required: true
   }
 })
-const regions = computed(() => regionsRef.value || []);
-const videos = computed(() => videosRef.value || []);
+if (regionsRef.value) {
+  regions.value = regionsRef.value
+}
+const videos = useState('videos')
 
 const showModal = ref(false);
 const currentVideo = ref(null)
 
 const mapRoot = ref(null);
 const svgEl = ref(null);
+const svgGroup = ref(null);
 const markers = ref([]);
 const openObject = ref(null);
 const flagMap = ref(false);
@@ -58,9 +54,14 @@ function getElementCenterSVG(el) {
 }
 
 function svgToScreen(x, y) {
+  if (!svgEl.value) return { x: 0, y: 0 };
   const pt = svgEl.value.createSVGPoint();
-  pt.x = x; pt.y = y;
-  return pt.matrixTransform(svgEl.value.getScreenCTM());
+  pt.x = x;
+  pt.y = y;
+  // если есть svgGroup — используем его CTM (в нём будем хранить translate/scale)
+  const ctmSource = (svgGroup.value && svgGroup.value.getScreenCTM) ? svgGroup.value : svgEl.value;
+  const matrix = ctmSource.getScreenCTM();
+  return pt.matrixTransform(matrix);
 }
 
 function screenToLocal(screenX, screenY) {
@@ -77,7 +78,7 @@ function dist(a, b) {
 // --- маркеры ---
 function buildInitialMarkers() {
   if (!svgEl.value || !mapRoot.value) return [];
-
+  
   const initial = [];
 
   for (const region of regions.value) {
@@ -115,8 +116,7 @@ function buildInitialMarkers() {
       posts: regionPosts,
     });
   }
-
-  console.log("✅ markers built:", initial);
+  
   return initial;
 }
 
@@ -129,8 +129,10 @@ async function recalcMarkers() {
 // --- GSAP zoom ---
 function zoomToPoint(svgX, svgY, targetScale) {
   const oldScale = transform.value.scale;
+  // вычисляем экранные координаты точки при текущем transform (используем svgGroup CTM)
   const screenX = svgX * oldScale + transform.value.x;
   const screenY = svgY * oldScale + transform.value.y;
+  // newX/newY так же, но при targetScale
   const newX = transform.value.x + (screenX - (svgX * targetScale + transform.value.x));
   const newY = transform.value.y + (screenY - (svgY * targetScale + transform.value.y));
 
@@ -146,13 +148,15 @@ function zoomToPoint(svgX, svgY, targetScale) {
 }
 
 function onMarkerClick(marker) {
+  
+  
   const region = marker.region;
   const regionId = region.id;
 
   if (!regionId) return;
 
   // 🎥 Ищем видео по совпадению ID региона
-  const regionVideos = videosRef.value?.filter(v => {
+  const regionVideos = videos.value?.filter(v => {
     const relatedRegions = v.acf?.code_region;
     return Array.isArray(relatedRegions) && relatedRegions.some(r => r?.ID === regionId);
   }) || [];
@@ -183,20 +187,23 @@ function onMarkerClick(marker) {
     videos: regionVideos,
     posts: regionPosts
   };
+  
 
-  console.log('🎥 Videos for region:', regionVideos);
-  console.log('📰 Posts for region:', regionPosts);
 }
 
 // --- трансформация ---
 function applyTransform() {
-  if (!svgEl.value) return;
-  gsap.set(svgEl.value, {
-    x: transform.value.x,
-    y: transform.value.y,
-    scale: transform.value.scale,
-    transformOrigin: "0 0",
-  });
+  if (!svgEl.value || !svgGroup.value) return;
+
+  // используем translate(tx, ty) scale(s)
+  const s = transform.value.scale;
+  const tx = transform.value.x;
+  const ty = transform.value.y;
+
+  // Обновляем атрибут transform у <g id="viewport"> — это не приведёт к растеризации в iOS
+  svgGroup.value.setAttribute('transform', `translate(${tx} ${ty}) scale(${s})`);
+
+  // Пересчёт маркеров (можно дебаунсить если нужно)
   recalcMarkers();
 }
 
@@ -317,7 +324,6 @@ function onTouchEnd() {
 
 function onYandexMarkerClick(e) {
   openObject.value = e;
-
 }
 
 function closeOpenObject() {
@@ -343,6 +349,7 @@ onMounted(async () => {
 
   await nextTick();
   svgEl.value = mapRoot.value.querySelector("#svgRoot");
+  svgGroup.value = mapRoot.value.querySelector("#viewport"); // <- важно
 
   if (window.innerWidth > 1024) {
     mapRoot.value.addEventListener("wheel", onWheel, { passive: false });
