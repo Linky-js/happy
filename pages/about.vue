@@ -5,6 +5,6 @@ import FooterBlock from '~/components/FooterBlock.vue';
 </script>
 <template>
 <MenuBlock />
-<AboutBlock />
+<AboutBlock class="about-page" />
 <FooterBlock />
 </template>

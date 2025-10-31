@@ -13,7 +13,7 @@ const links = [
 const showLinks = [
   { name: 'Видео', link: '/videos' },
   { name: 'О нас', link: '/about' },
-  { name: 'Контакты', link: '#contacts' },
+  { name: 'Контакты', link: '/contacts' },
 ]
 
 const active = ref(null)
@@ -121,4 +121,12 @@ onMounted(() => {
     &.active 
       box-shadow: 0px 2px 14px 0px rgba(15, 20, 44, 0.12)
       background: #fff
+@media (max-width: 767px) 
+  .menu 
+    max-width: 320px
+    top: 10px
+  .menu__link 
+    font-size: 14px
+    padding: 8px
+    max-width: 90px
 </style>
