@@ -5,8 +5,8 @@
   <footer class="footer">
     <div class="container">
       <div class="footer__left">
-        <NuxtLink to="/">Политика конфиденциальности</NuxtLink>
-        <NuxtLink to="/">Сookies</NuxtLink>
+        <NuxtLink to="/policy">Политика конфиденциальности</NuxtLink>
+        <NuxtLink to="/policy">Сookies</NuxtLink>
       </div>
       <div class="footer__right">
         <p>Сайт разработан <a href="">Art factory</a></p>

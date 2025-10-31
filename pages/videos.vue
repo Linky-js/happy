@@ -33,7 +33,7 @@ if (regions.value.length === 0) {
 <template>
   <section class="videos-page">
     <MenuBlock :page="page" />
-    <HistoryBlock :page="page" />
+    <HistoryBlock class="history-white" :page="page" />
     <FooterBlock />
   </section>
 </template>

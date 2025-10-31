@@ -466,6 +466,11 @@ onBeforeUnmount(() => {
     border-color: #A5A9B1
 .history
   padding-top: 120px
+  &-white 
+    background: #fff
+    padding-bottom: 48px
+    .posts 
+      margin-bottom: 0
   &__head 
     display: flex
     flex-direction: column
@@ -705,6 +710,8 @@ onBeforeUnmount(() => {
     padding: 0 6px
   .history 
     padding-top: 80px
+    &-white 
+      padding-bottom: 36px
     &__head 
       gap: 16px
       margin-bottom: 36px

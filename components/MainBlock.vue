@@ -14,12 +14,6 @@ const img1 = ref('./img/main-1.jpg');
 const img2 = ref('./img/main-2.png');
 const img3 = ref('./img/main-3.png');
 
-const isMobile = ref(false);
-function checkMobile() {
-  if (process.client) {
-    isMobile.value = window.innerWidth < 767
-  }
-}
 function scrollToMap() {
   $gsap.to(window, {
     duration: 1.2,
@@ -35,18 +29,14 @@ function scrollToContacts() {
   });
 }
 onMounted(() => {
-  checkMobile()
-  isMobile.value = window.innerWidth < 767;
 
-  if (!isMobile.value) {
-    $gsap.from('.menu', {
+  $gsap.from('.menu', {
       opacity: 0,
       y: -50, // сверху вниз
       duration: 1,
       delay: 1,
       ease: "power3.out"
     })
-  }
   $gsap.from('.img2', {
     opacity: 0,
     y: 50,
@@ -73,15 +63,11 @@ onMounted(() => {
     ease: 'power2.out'
   })
 });
-onBeforeUnmount(() => {
-  if (process.client) {
-    window.removeEventListener('resize', checkMobile)
-  }
-})
+
 </script>
 <template>
   <section class="main">
-    <MenuBlock v-if="!isMobile" />
+    <MenuBlock />
     <div class="main__imgs">
       <img class="img1" :src="img1" alt="" />
       <img class="img2" :src="img2" alt="" />

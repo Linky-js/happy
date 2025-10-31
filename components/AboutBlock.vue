@@ -76,6 +76,11 @@ const img = ref('./img/about-img.png');
   padding-bottom: 198px
   position: relative
   background: #fff
+  &-page 
+    padding-top: 150px
+    margin-top: 0
+    .about__img 
+      top: 370px
   &__head 
     display: flex
     flex-direction: column
@@ -160,6 +165,9 @@ const img = ref('./img/about-img.png');
 @media (max-width: 1200px)
   .about__head 
     margin-bottom: 62%
+  .about-page 
+    .about__img 
+      top: 300px
   .about__img 
     left: 0
     width: 98%
@@ -174,6 +182,11 @@ const img = ref('./img/about-img.png');
     margin-top: 80px
     padding-top: 48px
     padding-bottom: 80px
+    &-page 
+      margin-top: 0
+      padding-top: 128px
+      .about__img 
+        top: 270px
     &__head 
       gap: 16px
       margin-bottom: 70%
@@ -197,6 +210,9 @@ const img = ref('./img/about-img.png');
 @media (max-width: 540px)
   .about__img 
     top: 22%
+  .about-page 
+    .about__img 
+      top: 320px
 @media (max-width: 490px)
   .about__img 
     top: 26%
