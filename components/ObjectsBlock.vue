@@ -908,6 +908,8 @@ onBeforeUnmount(() => {
 
   pointer-events: auto
   z-index: 2
+  :hover
+    z-index: 3
 
 .custom__title
   visibility: hidden

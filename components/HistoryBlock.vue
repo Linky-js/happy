@@ -13,8 +13,8 @@ const props = defineProps({
   },
 })
 
-const videos = useState('videos')       // ожидается, что где-то вы заполнили videos.value = [...]
-const regions = useState('regions')     // список регионов (объекты как в примере)
+const videos = useState('videos')       
+const regions = useState('regions')    
 const isMobile = ref(false)
 
 videos.value = videos.value.map(video => {

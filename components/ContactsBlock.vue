@@ -22,10 +22,10 @@ const submitForm = async () => {
   loading.value = true
   try {
     const formData = new FormData()
-    formData.append('_wpcf7', '204') // ID формы из админки CF7
+    formData.append('_wpcf7', '204')
     formData.append('_wpcf7_unit_tag', 'form_123')
     formData.append('_wpcf7_version', '6.1.3')
-    formData.append('_wpcf7_locale', 'ru_RU')  // локаль сайта
+    formData.append('_wpcf7_locale', 'ru_RU') 
     formData.append('your-name', name.value)
     formData.append('your-email', email.value)
     formData.append('your-region', region.value)

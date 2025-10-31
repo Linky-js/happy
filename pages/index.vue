@@ -1,29 +1,31 @@
 <script setup>
-import { onMounted } from 'vue';
-import MainBlock from '~/components/MainBlock.vue';
-import Videosblock from '~/components/Videosblock.vue';
-import ObjectsBlock from '~/components/ObjectsBlock.vue';
-import HistoryBlock from '~/components/HistoryBlock.vue';
-import NewsBlock from '~/components/NewsBlock.vue';
-import AboutBlock from '~/components/AboutBlock.vue';
-import ContactsBlock from '~/components/ContactsBlock.vue';
-import FooterBlock from '~/components/FooterBlock.vue';
-const { data: page } = await useAsyncData('homepage', () =>
-  $fetch(`https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/pages/9?acf_fields=true`)
-);
-const videos = useState('videos', () => [])
-const { data: videosRef } = await useAsyncData('videos', () =>
-  $fetch('https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/video?per_page=100&_embed=true&acf_fields=true')
-);
+import MainBlock from '~/components/MainBlock.vue'
+import Videosblock from '~/components/Videosblock.vue'
+import ObjectsBlock from '~/components/ObjectsBlock.vue'
+import HistoryBlock from '~/components/HistoryBlock.vue'
+import NewsBlock from '~/components/NewsBlock.vue'
+import AboutBlock from '~/components/AboutBlock.vue'
+import ContactsBlock from '~/components/ContactsBlock.vue'
+import FooterBlock from '~/components/FooterBlock.vue'
 
-if (videosRef.value) {
-  videos.value = videosRef.value
+// Состояния (глобальные между страницами)
+const page = useState('homepage', () => null)
+const videos = useState('videos', () => [])
+
+// Если данных ещё нет — загружаем
+if (!page.value) {
+  const { data } = await useAsyncData('homepage', () =>
+    $fetch('https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/pages/9?acf_fields=true')
+  )
+  page.value = data.value
 }
 
-onMounted(() => {
-  console.log('videos', videos);
-  
-})
+if (videos.value.length === 0) {
+  const { data } = await useAsyncData('videos', () =>
+    $fetch('https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/video?per_page=100&_embed=true&acf_fields=true')
+  )
+  videos.value = data.value
+}
 </script>
 <template>
   <MainBlock :page="page"/>

@@ -1,165 +1,18 @@
 <script setup>
-import { ref, computed } from 'vue'
-import NewsPost from '~/components/NewsPost.vue';
-import ContactsBlock from '~/components/ContactsBlock.vue';
-import FooterBlock from '~/components/FooterBlock.vue';
-const tags = [
-  'Философия',
-  'Психология',
-  'Вдохновение',
-]
-const posts = [
-  {
-    img: './img/news-1.jpg',
-    title: 'Что мы узнали о счастье, путешествуя по России',
-    text: 'Команда проекта делится впечатлениями о людях, которые умеют быть счастливыми — несмотря ни на что.',
-    tag: 'Философия',
-    time: '~12 мин.',
-    author: 'Редакция проекта',
-    date: '15 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: './img/news-2.jpg',
-    title: 'Счастье — это не география. Это отношения',
-    text: 'Психолог Наталья Воронина рассуждает о том, как поддержка и любовь близких делают нас счастливыми, где бы мы ни были.',
-    tag: 'Психология',
-    time: '~5 мин.',
-    author: 'Наталья Воронина',
-    date: '3 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: './img/news-3.jpg',
-    title: 'Когда мечта сбывается: 5 вдохновляющих историй',
-    text: 'Короткие, но поразительные истории людей, чьи мечты стали реальностью благодаря настойчивости, вере и помощи окружающих.',
-    tag: 'Вдохновение',
-    time: '~8 мин.',
-    author: 'Анастасия Громова',
-    date: '1 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: './img/news-1.jpg',
-    title: 'Что мы узнали о счастье, путешествуя по России',
-    text: 'Команда проекта делится впечатлениями о людях, которые умеют быть счастливыми — несмотря ни на что.',
-    tag: 'Философия',
-    time: '~12 мин.',
-    author: 'Редакция проекта',
-    date: '15 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: './img/news-2.jpg',
-    title: 'Счастье — это не география. Это отношения',
-    text: 'Психолог Наталья Воронина рассуждает о том, как поддержка и любовь близких делают нас счастливыми, где бы мы ни были.',
-    tag: 'Психология',
-    time: '~5 мин.',
-    author: 'Наталья Воронина',
-    date: '3 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: './img/news-3.jpg',
-    title: 'Когда мечта сбывается: 5 вдохновляющих историй',
-    text: 'Короткие, но поразительные истории людей, чьи мечты стали реальностью благодаря настойчивости, вере и помощи окружающих.',
-    tag: 'Вдохновение',
-    time: '~8 мин.',
-    author: 'Анастасия Громова',
-    date: '1 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: './img/news-1.jpg',
-    title: 'Что мы узнали о счастье, путешествуя по России',
-    text: 'Команда проекта делится впечатлениями о людях, которые умеют быть счастливыми — несмотря ни на что.',
-    tag: 'Философия',
-    time: '~12 мин.',
-    author: 'Редакция проекта',
-    date: '15 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: './img/news-2.jpg',
-    title: 'Счастье — это не география. Это отношения',
-    text: 'Психолог Наталья Воронина рассуждает о том, как поддержка и любовь близких делают нас счастливыми, где бы мы ни были.',
-    tag: 'Психология',
-    time: '~5 мин.',
-    author: 'Наталья Воронина',
-    date: '3 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: './img/news-3.jpg',
-    title: 'Когда мечта сбывается: 5 вдохновляющих историй',
-    text: 'Короткие, но поразительные истории людей, чьи мечты стали реальностью благодаря настойчивости, вере и помощи окружающих.',
-    tag: 'Вдохновение',
-    time: '~8 мин.',
-    author: 'Анастасия Громова',
-    date: '1 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: './img/news-1.jpg',
-    title: 'Что мы узнали о счастье, путешествуя по России',
-    text: 'Команда проекта делится впечатлениями о людях, которые умеют быть счастливыми — несмотря ни на что.',
-    tag: 'Философия',
-    time: '~12 мин.',
-    author: 'Редакция проекта',
-    date: '15 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: './img/news-2.jpg',
-    title: 'Счастье — это не география. Это отношения',
-    text: 'Психолог Наталья Воронина рассуждает о том, как поддержка и любовь близких делают нас счастливыми, где бы мы ни были.',
-    tag: 'Психология',
-    time: '~5 мин.',
-    author: 'Наталья Воронина',
-    date: '3 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: './img/news-3.jpg',
-    title: 'Когда мечта сбывается: 5 вдохновляющих историй',
-    text: 'Короткие, но поразительные истории людей, чьи мечты стали реальностью благодаря настойчивости, вере и помощи окружающих.',
-    tag: 'Вдохновение',
-    time: '~8 мин.',
-    author: 'Анастасия Громова',
-    date: '1 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: './img/news-1.jpg',
-    title: 'Что мы узнали о счастье, путешествуя по России',
-    text: 'Команда проекта делится впечатлениями о людях, которые умеют быть счастливыми — несмотря ни на что.',
-    tag: 'Философия',
-    time: '~12 мин.',
-    author: 'Редакция проекта',
-    date: '15 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: './img/news-2.jpg',
-    title: 'Счастье — это не география. Это отношения',
-    text: 'Психолог Наталья Воронина рассуждает о том, как поддержка и любовь близких делают нас счастливыми, где бы мы ни были.',
-    tag: 'Психология',
-    time: '~5 мин.',
-    author: 'Наталья Воронина',
-    date: '3 июля 2025',
-    link: '/news/slug',
-  },
-  {
-    img: './img/news-3.jpg',
-    title: 'Когда мечта сбывается: 5 вдохновляющих историй',
-    text: 'Короткие, но поразительные истории людей, чьи мечты стали реальностью благодаря настойчивости, вере и помощи окружающих.',
-    tag: 'Вдохновение',
-    time: '~8 мин.',
-    author: 'Анастасия Громова',
-    date: '1 июля 2025',
-    link: '/news/slug',
-  },
-]
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import NewsPost from '~/components/NewsPost.vue'
+import ContactsBlock from '~/components/ContactsBlock.vue'
+import FooterBlock from '~/components/FooterBlock.vue'
+
+// Получаем посты
+const { data: postsRef } = await useAsyncData('posts', () =>
+  $fetch('https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/posts?per_page=100&_embed')
+)
+
+// Получаем теги
+const { data: tagsRef } = await useAsyncData('tags', () =>
+  $fetch('https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/tags?per_page=100')
+)
 
 const selectedTags = ref([])
 const showAll = ref(false)
@@ -178,20 +31,25 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', updatePostsCount)
 })
 
-function toggleTag(tag) {
-  if (selectedTags.value.includes(tag)) {
-    selectedTags.value = selectedTags.value.filter(t => t !== tag)
+function toggleTag(tagId) {
+  if (selectedTags.value.includes(tagId)) {
+    selectedTags.value = selectedTags.value.filter(t => t !== tagId)
   } else {
-    selectedTags.value.push(tag)
+    selectedTags.value.push(tagId)
   }
   showAll.value = false
 }
 
+// Фильтрация постов по тегам
 const filteredPosts = computed(() => {
+  const posts = postsRef.value || []
   if (selectedTags.value.length === 0) return posts
-  return posts.filter(post => selectedTags.value.includes(post.tag))
+  return posts.filter(post =>
+    post.tags.some(tagId => selectedTags.value.includes(tagId))
+  )
 })
 
+// Ограничиваем количество видимых постов
 const visiblePosts = computed(() => {
   if (showAll.value) return filteredPosts.value
   return filteredPosts.value.slice(0, postsCount.value)
@@ -203,22 +61,33 @@ function toggleShow() {
   showAll.value = !showAll.value
 }
 </script>
+
 <template>
   <section class="news">
     <div class="container">
       <div class="news__head">
         <NuxtLink to="/" class="btn">Вернуться на главную</NuxtLink>
         <h2>Статьи и размышления о счастье</h2>
-        <div class="tags">
-          <div class="tags__item" v-for="tag in tags" :key="tag" :class="{ active: selectedTags.includes(tag) }"
-            @click="toggleTag(tag)">
-            {{ tag }}
+
+        <!-- ✅ Вывод тегов -->
+        <div class="tags" v-if="tagsRef?.length">
+          <div
+            class="tags__item"
+            v-for="tag in tagsRef"
+            :key="tag.id"
+            :class="{ active: selectedTags.includes(tag.id) }"
+            @click="toggleTag(tag.id)"
+          >
+            {{ tag.name }}
           </div>
         </div>
       </div>
+
+      <!-- ✅ Вывод постов -->
       <div class="posts">
-        <NewsPost v-for="(post, i) in visiblePosts" :key="i" :post="post" />
+        <NewsPost v-for="post in visiblePosts" :key="post.id" :post="post" />
       </div>
+
       <div class="posts__bot" v-if="showButton">
         <button type="button" class="btn-load" @click="toggleShow">
           {{ showAll ? 'Скрыть' : 'Показать ещё' }}
@@ -226,9 +95,11 @@ function toggleShow() {
       </div>
     </div>
   </section>
-  <ContactsBlock class="nobg"/>
-  <FooterBlock class="nobg"/>
+
+  <ContactsBlock class="nobg" />
+  <FooterBlock class="nobg" />
 </template>
+
 <style lang="sass" scoped>
 .news
   padding-top: 20px

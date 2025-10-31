@@ -17,8 +17,7 @@ const emit = defineEmits(["close"]);
             fill="#696969" />
         </svg>
       </div>
-      <iframe :src="linkVideo" style="border: none;" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-        allowfullscreen></iframe>
+      <div class="iframe" v-html="linkVideo"></div>
     </div>
   </div>
 </template>
@@ -43,11 +42,15 @@ const emit = defineEmits(["close"]);
     max-width: 1353px
     width: 100%
     border-radius: 20px
-    iframe 
+    .iframe 
       width: 100%
       border-radius: 20px
       height: 100%
       object-fit: cover
+      iframe
+        width: 100%
+        height: 100%
+        border-radius: 20px
   &__close 
     width: 44px
     height: 44px

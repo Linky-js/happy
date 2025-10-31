@@ -1,28 +1,47 @@
 <script setup>
-import { onMounted } from 'vue';
-import NewsPost from './NewsPost.vue';
-import { Swiper, SwiperSlide } from 'swiper/vue';
-import { Navigation } from 'swiper/modules';
+import { ref, computed, watchEffect } from 'vue'
+import { useRoute } from 'vue-router'
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import { Navigation } from 'swiper/modules'
+import NewsPost from './NewsPost.vue'
 
-import 'swiper/css';
-import 'swiper/css/navigation';
+import 'swiper/css'
+import 'swiper/css/navigation'
 
-const modules = [Navigation];
+const modules = [Navigation]
+
 const props = defineProps({
-  dontslug: { type: String, required: false },
   title: { type: String, required: false },
   text: { type: String, required: false },
 })
-const { data: otherPosts } = await useAsyncData(`other-${props.dontslug}`, () =>
-  $fetch(`https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/posts?per_page=5&exclude=${props.dontslug}&_embed`)
-)
-const posts = computed(() => otherPosts.value || [])
-onMounted(() => {
-  console.log('otherPosts', posts.value)
+
+// Получаем текущий маршрут
+const route = useRoute()
+
+// Состояние для постов
+const otherPosts = ref([])
+
+// Загружаем посты при изменении маршрута
+watchEffect(async () => {
+  // если slug есть — исключаем текущий пост
+  const slug = route.params?.slug
+  const url = slug
+    ? `https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/posts?per_page=5&_embed&exclude_slug=${slug}`
+    : 'https://wp.xn--80aeina8anebeag6dzd.xn--p1ai/wp-json/wp/v2/posts?per_page=5&_embed'
+
+  try {
+    const data = await $fetch(url)
+    otherPosts.value = data
+  } catch (e) {
+    console.error('Ошибка при загрузке новостей:', e)
+    otherPosts.value = []
+  }
 })
+
+const posts = computed(() => otherPosts.value || [])
 </script>
 <template>
-  <section v-if="posts?.length > 0" class="news" id="news">
+  <section  class="news" id="news">
     <div class="container">
       <div class="news__head">
         <h2>{{ props?.title }}</h2>
