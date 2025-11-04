@@ -1,5 +1,6 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, nextTick, watch } from 'vue'
+
 
 const name = ref('')
 const email = ref('')
@@ -10,7 +11,7 @@ const message = ref('')
 const loading = ref(false)
 const success = ref(false)
 const error = ref(null)
-
+const textarea = ref(null)
 const submitForm = async () => {
   error.value = null
   success.value = false
@@ -18,14 +19,18 @@ const submitForm = async () => {
     error.value = 'Поставьте галочку на согласие обработки данных.'
     return
   }
-
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email.value)) {
+    error.value = 'Введите корректный email.'
+    return
+  }
   loading.value = true
   try {
     const formData = new FormData()
     formData.append('_wpcf7', '204')
     formData.append('_wpcf7_unit_tag', 'form_123')
     formData.append('_wpcf7_version', '6.1.3')
-    formData.append('_wpcf7_locale', 'ru_RU') 
+    formData.append('_wpcf7_locale', 'ru_RU')
     formData.append('your-name', name.value)
     formData.append('your-email', email.value)
     formData.append('your-region', region.value)
@@ -51,6 +56,21 @@ const submitForm = async () => {
     loading.value = false
   }
 }
+const autoResize = () => {
+  const el = textarea.value
+  if (el) {
+    el.style.height = 'auto'
+    el.style.height = el.scrollHeight + 'px'
+  }
+}
+watch(topic, async () => {
+  await nextTick()
+  autoResize()
+})
+watch(email, (val) => {
+  // Удаляем недопустимые символы
+  email.value = val.replace(/[^a-zA-Z0-9@._-]/g, '')
+})
 </script>
 
 <template>
@@ -68,12 +88,12 @@ const submitForm = async () => {
             <input v-model="name" type="text" placeholder="Имя" class="input" required>
             <input v-model="email" type="email" placeholder="E-mail" class="input" required>
             <input v-model="region" type="text" placeholder="Регион" class="input">
-            <input v-model="topic" type="text" placeholder="Тема/краткое описание" class="input">
-
+            <textarea v-model="topic" rows="1" placeholder="Тема/краткое описание" class="input" @input="autoResize"
+              ref="textarea"></textarea>
             <div class="check">
               <input type="checkbox" id="check-policy" v-model="policy">
               <label for="check-policy">
-                Даю согласие на обработку <NuxtLink to="/">персональных данных</NuxtLink>
+                Даю согласие на обработку <NuxtLink to="/policy">персональных данных</NuxtLink>
               </label>
             </div>
 
@@ -81,8 +101,8 @@ const submitForm = async () => {
               {{ loading ? 'Отправка...' : 'Отправить' }}
             </button>
 
-            <p v-if="success" class="success">✅ Заявка успешно отправлена!</p>
-            <p v-if="error" class="error">❌ {{ error }}</p>
+            <p v-if="success" class="success"><span>✅</span> Заявка успешно отправлена!</p>
+            <p v-if="error" class="error-text"><span>❌</span> {{ error }}</p>
           </form>
         </div>
       </div>
@@ -91,6 +111,23 @@ const submitForm = async () => {
 </template>
 
 <style lang="sass" scoped>
+.success 
+  display: flex
+  align-items: center
+  justify-content: center
+  gap: 5px
+  font-size: 16px
+  width: 100%
+  grid-column: 1 / 3
+.error-text 
+  display: flex
+  align-items: center
+  justify-content: center
+  gap: 5px
+  font-size: 16px
+  width: 100%
+  grid-column: 1 / 3
+  color: #EF2727
 .contacts 
   padding: 0 20px
   background: #fff
@@ -133,6 +170,11 @@ const submitForm = async () => {
     display: grid
     grid-template-columns: repeat(2, 1fr)
     gap: 16px
+    textarea.input 
+      resize: none
+      height: 58px
+      &::-webkit-scrollbar
+        display: none
     .input 
       width: 100% 
       font-size: 14px

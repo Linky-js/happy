@@ -242,14 +242,18 @@ function formatDate(dateStr) {
     display: flex
     flex-direction: column
     gap: 24px
-    max-width: 1100px
+    max-width: 900px
     width: 100%
   &__content 
     display: flex
     flex-direction: column
     gap: 92px
     padding-bottom: 120px
-    border-bottom: 1px solid #B3B3B3
+    border-bottom: 1px solid #B3B3B3  
+    .content 
+      display: flex
+      flex-direction: column
+      gap: 15px
   &__block
     display: flex
     flex-direction: column
@@ -259,7 +263,7 @@ function formatDate(dateStr) {
       display: flex
       flex-direction: column
       gap: 24px
-      max-width: 1100px
+      max-width: 900px
       width: 100%
     &-swiper 
       overflow: visible

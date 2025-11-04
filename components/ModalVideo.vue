@@ -52,11 +52,6 @@ const emit = defineEmits(["close"]);
         height: 100%
         border-radius: 20px
   &__close 
-    width: 44px
-    height: 44px
-    border-radius: 12px
-    background: #fff
-    border: 1px solid #fff
     display: flex
     align-items: center
     justify-content: center

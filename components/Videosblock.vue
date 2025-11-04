@@ -73,21 +73,21 @@ function openModal(link) {
     <div class="vidos__box">
       <div class="arrows">
         <div class="arrow arrow-prev">
-          <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="12" height="24" viewBox="0 0 12 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd" clip-rule="evenodd"
-              d="M0.842941 7.71065L6.49994 13.3676L7.91394 11.9536L2.96394 7.00365L7.91394 2.05365L6.49994 0.639648L0.842941 6.29665C0.65547 6.48418 0.550154 6.73848 0.550154 7.00365C0.550154 7.26881 0.65547 7.52312 0.842941 7.71065Z"
+              d="M1.84306 12.7106L7.50006 18.3676L8.91406 16.9536L3.96406 12.0036L8.91406 7.05365L7.50006 5.63965L1.84306 11.2966C1.65559 11.4842 1.55028 11.7385 1.55028 12.0036C1.55028 12.2688 1.65559 12.5231 1.84306 12.7106Z"
               fill="#3B3B3B" />
           </svg>
         </div>
         <div class="arrow arrow-next">
-          <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg width="12" height="24" viewBox="0 0 12 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd" clip-rule="evenodd"
-              d="M7.15694 7.71065L1.49994 13.3676L0.0859375 11.9536L5.03594 7.00365L0.0859375 2.05365L1.49994 0.639648L7.15694 6.29665C7.34441 6.48418 7.44972 6.73848 7.44972 7.00365C7.44972 7.26881 7.34441 7.52312 7.15694 7.71065Z"
+              d="M10.1569 12.7106L4.49994 18.3676L3.08594 16.9536L8.03594 12.0036L3.08594 7.05365L4.49994 5.63965L10.1569 11.2966C10.3444 11.4842 10.4497 11.7385 10.4497 12.0036C10.4497 12.2688 10.3444 12.5231 10.1569 12.7106Z"
               fill="#3B3B3B" />
           </svg>
         </div>
       </div>
-      <swiper v-bind="swiperOptions"  class="vidos__swiper">
+      <swiper v-bind="swiperOptions" class="vidos__swiper">
         <swiper-slide class="vidos__slider" v-for="video in vidos" :key="video.id">
           <div class="vidos__slider-img">
             <img :src="video.poster" alt="">
@@ -118,7 +118,7 @@ function openModal(link) {
     text-align: center
     gap: 30px
     p 
-      font-size: 18px
+      font-size: 20px
       line-height: 135%
   &__box 
     position: relative
@@ -188,7 +188,7 @@ function openModal(link) {
     padding: 32px 28px
     margin-top: auto
     background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.6) 100%)
-    backdrop-filter: blur(6px)
+    backdrop-filter: blur(1px)
     min-height: 140px
     
     p 
@@ -256,7 +256,7 @@ function openModal(link) {
       padding-left: 20px
       padding-right: 20px
       p 
-        font-size: 14px
+        font-size: 16px
     &__swiper 
       pointer-events: all
       padding: 0
