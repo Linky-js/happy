@@ -46,6 +46,15 @@ function formatDate(dateStr) {
 
 
 <template>
+  <Head>
+    <Title>{{ post.acf?.titlemeta }}</Title>
+    <Meta name="description" :content="post.acf?.descriptionmeta" />
+    <Meta name="keywords" :content="post.acf?.keywordsmeta" />
+    <Meta property="og:title" :content="post.acf?.titlemeta" />
+    <Meta property="og:description" :content="post.acf?.descriptionmeta" />
+    <Meta property="og:url" :content="post.acf?.urlmeta" />
+    <Meta property="og:type" content="website" />
+  </Head>
   <section class="article" v-if="post">
     <div class="article__thumb">
       <img :src="post?._embedded?.['wp:featuredmedia']?.[0]?.source_url" alt="">
