@@ -92,7 +92,7 @@ onBeforeUnmount(() => {
           семью, найти любовь
           или просто подарить окружающим улыбку.
         </div>
-        <div class="modal__box">
+        <div class="modal__box" v-if="props.openObject.videos?.length > 0">
           <div class="modal__box-head">
             <div class="mintitle">Видео</div>
             <div class="arrows" v-if="props.openObject.videos?.length > 1">
@@ -267,6 +267,7 @@ onBeforeUnmount(() => {
   &__swiper 
     overflow: visible
     margin-left: 0
+    width: 100%
   &__desk 
     font-size: 16px
     line-height: 140%

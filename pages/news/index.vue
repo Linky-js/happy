@@ -1,5 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+
+import MenuBlock from '~/components/MenuBlock.vue'
 import NewsPost from '~/components/NewsPost.vue'
 import ContactsBlock from '~/components/ContactsBlock.vue'
 import FooterBlock from '~/components/FooterBlock.vue'
@@ -63,10 +65,11 @@ function toggleShow() {
 </script>
 
 <template>
+  <MenuBlock />
   <section class="news">
     <div class="container">
       <div class="news__head">
-        <NuxtLink to="/" class="btn">Вернуться на главную</NuxtLink>
+        <!-- <NuxtLink to="/" class="btn">Вернуться на главную</NuxtLink> -->
         <h2>Статьи и размышления о счастье</h2>
 
         <!-- ✅ Вывод тегов -->
@@ -102,7 +105,7 @@ function toggleShow() {
 
 <style lang="sass" scoped>
 .news
-  padding-top: 20px
+  padding-top: 120px
   margin-bottom: 120px
   &__head 
     display: flex
@@ -172,7 +175,7 @@ function toggleShow() {
     border-color: #A5A9B0
 @media (max-width: 767px)
   .news 
-    padding-top: 14px
+    padding-top: 80px
     margin-bottom: 80px
     &__head 
       gap: 16px

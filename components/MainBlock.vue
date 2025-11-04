@@ -10,9 +10,9 @@ const props = defineProps({
   }
 })
 
-const img1 = ref('./img/main-1.jpg');
-const img2 = ref('./img/main-2.png');
-const img3 = ref('./img/main-3.png');
+const img1 = ref('./img/compressed/main-1.jpg');
+const img2 = ref('./img/compressed/main-2.png');
+const img3 = ref('./img/compressed/main-3.png');
 
 function scrollToMap() {
   $gsap.to(window, {
@@ -123,14 +123,14 @@ onMounted(() => {
   flex-direction: column
   gap: 29px
   p
-    font-size: 18px
+    font-size: 22px
     color: #fff
 .main__bot 
   display: flex
   flex-direction: column
   gap: 40px
   p 
-    font-size: 16px
+    font-size: 18px
     line-height: 135%
     border-width: 0px 5px 0px 6px
     border-radius: 16px
@@ -139,7 +139,7 @@ onMounted(() => {
     border-color: #FFFFFF
     font-weight: 500
     padding: 30px 10px
-    max-width: 763px
+    max-width: 853px
 .main__imgs 
   position: absolute
   top: 0
@@ -206,26 +206,29 @@ onMounted(() => {
     &__top 
       gap: 20px
       p 
-        font-size: 14px
+        font-size: 16px
     &__bot 
       gap: 28px
       p 
-        padding: 15px 10px
-        font-size: 13px
+        padding: 15px
+        font-size: 14px
+        background: rgba(0,0,0,.04)
     &__btns 
       flex-direction: column
       align-items: center
       justify-content: center
       gap: 16px
-      max-width: 288px
+      max-width: 256px
       width: 100%
       margin: 0 auto
   .btn-main 
     font-size: 14px
     height: 56px
     max-width: 100%
+    padding: 16px 5px
   .btn-bd 
     font-size: 14px
     height: 56px
     max-width: 100%
+    padding: 16px 5px
 </style>

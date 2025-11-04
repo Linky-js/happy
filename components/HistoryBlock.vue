@@ -302,21 +302,19 @@ onBeforeUnmount(() => {
         <p class="dop__activities" :class="{ active: isActiveMemory === 'Активности' }" @click="toggleActiveMemory('Активности')">Активности</p>
       </div>
       <div class="posts">
-        <transition name="fade">
-          <div class="memory" v-if="isActiveMemory === 'Воспоминания'" :class="{ active: isActiveMemory === 'Воспоминания' }">
-            <div class="memory__imgs">
-              <img class="memory__imgs-img img1" :src="memoryImg1" alt="">
-              <img class="memory__imgs-img img2" :src="memoryImg2" alt="">
-              <div class="memory__imgs-icon">
-                <img class="imgIcon" :src="memoryIcon" alt="" />
-              </div>
-              <img class="memory__imgs-img img3" :src="memoryImg3" alt="">
-              <img class="memory__imgs-img img4" :src="memoryImg4" alt="">
+        <div class="memory" v-if="isActiveMemory === 'Воспоминания'" :class="{ active: isActiveMemory === 'Воспоминания' }">
+          <div class="memory__imgs">
+            <img class="memory__imgs-img img1" :src="memoryImg1" alt="">
+            <img class="memory__imgs-img img2" :src="memoryImg2" alt="">
+            <div class="memory__imgs-icon">
+              <img class="imgIcon" :src="memoryIcon" alt="" />
             </div>
-            <img class="memory__u" :src="memoryU" alt="">
-            <button class="memory__btn" @click="scrollToContacts">Заказать воспоминания</button>
+            <img class="memory__imgs-img img3" :src="memoryImg3" alt="">
+            <img class="memory__imgs-img img4" :src="memoryImg4" alt="">
           </div>
-        </transition>
+          <img class="memory__u" :src="memoryU" alt="">
+          <button class="memory__btn" @click="scrollToContacts">Заказать воспоминания</button>
+        </div>
         <div v-for="(post, i) in visiblePosts" :key="i" class="post">
           <div class="post__top"
             :style="{ backgroundImage: `url(${post._embedded?.['wp:featuredmedia']?.[0]?.source_url})` }">

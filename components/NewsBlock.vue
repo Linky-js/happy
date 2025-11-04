@@ -63,7 +63,7 @@ const posts = computed(() => otherPosts.value || [])
           <NewsPost :post="post" />
         </swiper-slide>
       </swiper>
-      <div class="arrows">
+      <div class="arrows" v-if="posts?.length > 1">
         <div class="arrow arrow-prev">
           <svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd" clip-rule="evenodd"
