@@ -24,6 +24,7 @@ const props = defineProps({
 if (regionsRef.value) {
   regions.value = regionsRef.value
 }
+const mobile = ref(true);
 const videos = useState('videos')
 
 const showModal = ref(false);
@@ -346,7 +347,7 @@ watch(() => regions.length, val => { if (val > 0) recalcMarkers(); });
 
 onMounted(async () => {
 
-
+  mobile.value = window.innerWidth < 1024;
   await nextTick();
   svgEl.value = mapRoot.value.querySelector("#svgRoot");
   svgGroup.value = mapRoot.value.querySelector("#viewport"); // <- важно
@@ -395,7 +396,7 @@ onBeforeUnmount(() => {
             <div class="info__box">
               <div class="info info__scroll">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <g clip-path="url(#clip0_69_2124)">
+                  <g >
                     <mask id="mask0_69_2124" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0"
                       width="20" height="20">
                       <path
@@ -421,7 +422,7 @@ onBeforeUnmount(() => {
               </div>
               <div class="info info__touch">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                  <g clip-path="url(#clip0_69_2124)">
+                  <g >
                     <mask id="mask0_69_2124" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0"
                       width="20" height="20">
                       <path
@@ -718,15 +719,15 @@ onBeforeUnmount(() => {
                   data-title="Луганская Народная Республика" data-code="RU-LUG" />
               </g>
             </svg>
-            <div class="markers-layer" aria-hidden="true">
+            <div  class="markers-layer" aria-hidden="true">
               <div v-for="(m, idx) in markers" :key="idx" class="marker"
                 :style="{ left: m.left + 'px', top: m.top + 'px' }" @click="onMarkerClick(m, $event)"
                 :title="m?.region.title.rendered" :data-code="m.region.acf.code_region"
                 @mouseenter="markerPathHover(m, $event)" @mouseleave="markerPathLeave(m, $event)">
                 <div class="marker__dot">
                   <svg width="32" height="37" viewBox="0 0 32 37" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g clip-path="url(#clip0_103_963)" filter="url(#filter0_d_103_963)">
-                      <g filter="url(#filter1_d_103_963)">
+                    <g >
+                      <g >
                         <path
                           d="M7.64342 4.7097C9.87107 2.55621 12.8731 1.35041 15.9998 1.35328C19.1313 1.35328 22.1373 2.5584 24.3562 4.7097C26.3654 6.65525 27.4121 8.83315 27.6887 11.095C27.964 13.3373 27.472 15.588 26.5337 17.6987C24.6713 21.8977 20.9694 25.7161 17.4187 28.2005C17.0048 28.4911 16.5087 28.6474 15.9998 28.6474C15.4909 28.6474 14.9948 28.4911 14.5809 28.2005C11.0302 25.7161 7.32827 21.8963 5.46448 17.6987C4.5276 15.588 4.03705 13.3373 4.31085 11.0936C4.58749 8.83315 5.63418 6.65665 7.64342 4.7097ZM12.0783 12.2008C12.0783 11.1799 12.4914 10.2009 13.2269 9.47904C13.9623 8.75719 14.9597 8.35166 15.9998 8.35166C17.0398 8.35166 18.0373 8.75719 18.7727 9.47904C19.5081 10.2009 19.9213 11.1799 19.9213 12.2008C19.9213 13.2216 19.5081 14.2007 18.7727 14.9225C18.0373 15.6444 17.0398 16.0499 15.9998 16.0499C14.9597 16.0499 13.9623 15.6444 13.2269 14.9225C12.4914 14.2007 12.0783 13.2216 12.0783 12.2008Z"
                           fill="white" />
